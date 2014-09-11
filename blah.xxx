@@ -1,0 +1,6 @@
+#include <stdint.h>
+void
+hello()
+{
+	hello;
+}
