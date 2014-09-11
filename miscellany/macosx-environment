@@ -1,0 +1,46 @@
+#!/usr/bin/env sh
+set -e
+set -u
+
+installIfCommandNotPresent()
+{
+	local program="$1"
+	shift 1
+	
+	if command -v "$program" 1>/dev/null 2>/dev/null ; then
+		return 0
+	fi
+	
+	printf '%s\n' "Installing $program"
+	"$@"
+}
+
+installHomebrewDependency()
+{
+	brew update
+	brew upgrade
+	
+	# need to take into account taps... duplicates a lot of logic!!!
+	
+	local dependency
+	for dependency in "$@"
+	do
+		if ! brew --prefix "$dependency" 2>/dev/null; then
+			brew install "$dependency"
+		fi
+	done
+}
+
+_installHomebrew()
+{
+	ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+	brew doctor
+	
+	# check is /usr/local/{s}bin is on the path
+}
+
+installIfCommandNotPresent brew _installHomebrew
+
+installHomebrewDependency ruby bash dash ksh pdksh mksh zsh
+
+installIfCommandNotPresent /usr/local/bin/travis-lint gem install travis-lint
