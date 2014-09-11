@@ -15,23 +15,7 @@ installIfCommandNotPresent()
 	"$@"
 }
 
-installHomebrewDependency()
-{
-	brew update
-	brew upgrade
-	
-	# need to take into account taps... duplicates a lot of logic!!!
-	
-	local dependency
-	for dependency in "$@"
-	do
-		if ! brew --prefix "$dependency" 2>/dev/null; then
-			brew install "$dependency"
-		fi
-	done
-}
-
-_installHomebrew()
+installHomebrew()
 {
 	ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 	brew doctor
@@ -39,8 +23,48 @@ _installHomebrew()
 	# check is /usr/local/{s}bin is on the path
 }
 
-installIfCommandNotPresent brew _installHomebrew
+installHomebrewDependency()
+{
+	printf '%s\n' "Updating Homebrew"
+	brew update
+	
+	printf '%s\n' "Upgrading Homebrew"
+	brew upgrade
+	
+	# need to take into account taps... duplicates a lot of logic!!!
+	
+	local dependency
+	for dependency in "$@"
+	do
+		if ! brew --prefix "$dependency" 1>/dev/null 2>/dev/null; then
+			brew install "$dependency"
+		fi
+	done
+}
 
-installHomebrewDependency ruby bash dash ksh pdksh mksh zsh
+installRubyGemDependency()
+{
+	local dependency
+	for dependency in "$@"
+	do
+		# gem help list documentation (2.1.2_3) refers to 'STRING' when it means 'regex'!
+		if ! gem list "^${dependency}$" --installed --local 1>/dev/null; then
+			gem install "$dependency"
+		fi
+	done
+}
 
-installIfCommandNotPresent /usr/local/bin/travis-lint gem install travis-lint
+installIfCommandNotPresent brew installHomebrew
+
+installHomebrewDependency \
+	ruby \
+	bash \
+	dash \
+	ksh \
+	pdksh \
+	mksh \
+	zsh
+
+installRubyGemDependency \
+	travis-lint \
+	travis
