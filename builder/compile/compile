@@ -1,3 +1,12 @@
 #!/usr/bin/env sh
 set -e
 set -u
+# we assemble this file, effectively, and so should include a revision_blob or somesuch so we can tell if we're out-of-date
+# if it ends .init-functions, it goes in here. Order only matters for the final line  init_main "$@"  but we could generate that
+# if we're standing alone, then we need to set core_
+# if we're including all functions, then we need to override core_uses
+
+# 0 create empty file somewhere
+# 1 set the 
+# 2 find all .init-functions, and output to new file
+# 3 (optional) output all other functions by overridding core_use
