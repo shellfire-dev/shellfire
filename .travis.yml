@@ -1,11 +1,15 @@
 language: c
 compiler:
   - gcc
+branches:
+  only:
+    - master
+    - deployment
 script: "./build"
 notifications:
   email:
-	on_success: change
-	on_failure: always 
+    on_success: change
+    on_failure: always 
 after_success:
   - chmod 0600 .travis/deploy_key.pem
   - ssh-add .travis/deploy_key.pem
