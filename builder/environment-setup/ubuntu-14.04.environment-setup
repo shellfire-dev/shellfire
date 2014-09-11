@@ -1,0 +1,37 @@
+#!/usr/bin/env sh
+set -e
+set -u
+
+installAptGetDependency()
+{
+	sudo apt-get update
+	sudo apt-get dist-upgrade
+	sudo apt-get --yes --purge install "$@"
+}
+
+installRubyGemDependency()
+{
+	local dependency
+	for dependency in "$@"
+	do
+		# gem help list documentation (2.1.2_3) refers to 'STRING' when it means 'regex'!
+		if ! gem list "^${dependency}$" --installed --local 1>/dev/null; then
+			gem install "$dependency"
+		fi
+	done
+}
+
+# Will be ruby 1.9.3 or older!
+installAptGetDependency \
+	ruby \
+	bash \
+	dash \
+	ksh \
+	mksh \
+	pdksh \
+	zsh \
+	busybox-static
+
+installRubyGemDependency \
+	travis-lint \
+	travis

@@ -15,10 +15,7 @@ notifications:
 #http://docs.travis-ci.com/user/deployment/custom/ (to a git deploy repo)
 #http://docs.travis-ci.com/user/uploading-artifacts/ (deploy built artifacts to S3)
 after_success:
-  - chmod 0600 .travis/deploy_key.pem
-  - ssh-add .travis/deploy_key.pem
-  - git remote add deploy DEPLOY_REPO_URI_GOES_HERE
-  - git push deploy
+  - ./builder/deployment/push-to-git
 deploy:
   provider: releases
   api_key:

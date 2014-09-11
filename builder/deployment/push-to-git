@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+set -e
+set -u
+
+# Directory is root of git repo
+chmod 0600 builder/deployment/deploy_key.pem
+ssh-add builder/deployment/deploy_key.pem
+git remote add release DEPLOY_REPO_URI_GOES_HERE
+git config --global push.default simple
+git push release
