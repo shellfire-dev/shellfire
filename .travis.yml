@@ -1,4 +1,22 @@
 language: c
 compiler:
- - gcc
-script: ./build
+  - gcc
+script: "./build"
+notifications:
+  email:
+	on_success: change
+	on_failure: always 
+after_success:
+  - chmod 0600 .travis/deploy_key.pem
+  - ssh-add .travis/deploy_key.pem
+  - git remote add deploy DEPLOY_REPO_URI_GOES_HERE
+  - git push deploy
+deploy:
+  provider: releases
+  api_key:
+    secure: E/uIFl9/Cs1iiur+dUqjapMxHd/PjkbPghDXjlrlaW9rK4vg/4Kji6Bu9/udmoHtFEEMZ2+L3ovzX1f6lpm2CdSJ0+8HMvaWu8sfHlC0bmHnwuqs1BIgIndfehcNckkZYVfax2fxQM8w/LzDMhRA9Wf82IzRRLJahSkf1UgEVic=
+  file: "file-to-upload.tar"
+  on:
+    repo: shellfire-dev/shellfire
+    branch: deployment
+    tags: true
