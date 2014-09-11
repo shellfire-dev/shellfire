@@ -1,0 +1,21 @@
+core_compatibility_setSaneShellOptions()
+{
+	set -o braceexpand
+	set +o errtrace
+	set +o functrace
+	set +o hashall
+	set +o histexpand
+	set +o history
+	set -o interactive-comments
+	set +o keyword
+	set +o onecmd
+	set +o physical
+	set +o pipefail
+	set +o posix
+}
+
+core_compatibility_indirectVariableValue()
+{
+	local variable="$1"
+	echo "${!1}"
+}

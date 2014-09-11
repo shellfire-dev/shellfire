@@ -1,0 +1,28 @@
+
+#@SHELLFIRE_INIT_BEGIN@#
+core_compatibility_basename()
+{
+	printf '%s' "${1##*/}"
+}
+
+core_compatibility_testVariableIsSet()
+{
+	local variableName="$1"
+	eval "[ \"\${$variableName+unset}\" = 'unset' ]"
+}
+
+core_compatibility_indirectVariableValue()
+{
+	eval "printf '%s' \"\$$1\""
+}
+
+core_compatibility_which()
+{
+	command -v "$1"
+}
+
+core_compatibility_whichNoOutput()
+{
+	core_compatibility_which "$1" 1>/dev/null 2>/dev/null
+}
+#@SHELLFIRE_INIT_END@#

@@ -1,0 +1,149 @@
+# Consider breaking this out
+core_configuration_ifPathIsExtantCallCallback()
+{
+	local checkConfigurationSecurity=$1
+	local callback="$2"
+	if [ $# -eq 3 ]; then
+		local path="$3"
+	else
+		local environmentVariable="$3"
+		local relativePath="$4"
+		
+		local blacklistedEnvironmentVariable
+		for blacklistedEnvironmentVariable in $core_configuration_defaultsBlacklistedEnvironmentVariables
+		do
+			if [ "$blacklistedEnvironmentVariable" = "$environmentVariablePrefixingPath" ]; then
+				return 0
+			fi
+		done
+	
+		if core_compatibility_testVariableIsUnset "$environmentVariable"; then
+			return 0
+		fi
+		local parentPath="$(core_compatibility_indirectVariableValue "$environmentVariable")"
+		if [ -z "$parentPath" ]; then
+			return 0
+		fi
+		local path="${parentPath}${relativePath}"
+	fi
+
+	if [ -e "$path" ]; then
+		if [ -r "$path" ]; then
+			$callback "$path"
+		fi
+	fi
+}
+
+core_configuration_callbackLoadFile()
+{
+	local filePath="$1"
+	if [ -f "$filePath" ]; then
+		if [ -x "$filePath" ]; then
+			core_message WARN "File '$filePath' is executable and should not be; ignoring"
+			return 0
+		fi
+		. "$filePath" || core_exitError "Could not load '$filePath'"
+	fi
+}
+
+core_configuration_callbackLoadFolder()
+{
+	local folderPath="$1"
+	if [ -d "$folderPath" ]; then
+		if [ -x "$folderPath" ]; then
+			local filePath
+			for filePath in "$folderPath"/*
+			do
+				core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFile "$filePath"
+			done
+		fi
+	fi
+}
+
+core_configuration_defaultsBlacklistedEnvironmentVariables=''
+core_configuration_load()
+{
+	xxx_defaultsNaiveFileStat()
+	{
+		:
+	}
+	
+	xxx_defaultsNaiveFolderStat()
+	{
+		# always use fully resolved path
+		local folderPath="$1"
+		xxxxxxxxxx
+		
+		# Ordinarily, one should NEVER use ls.
+		# However, stat's format varies widely unless we specify a format
+		# And the format switch varies as -c (GNU, busybox) to -f (BSD), so we'd need to do feature detection [GNU, BusyBox, ToyBox, BSD, ?Heritage Toolchest]
+		# The ls switches chosen seem to work on MacOSX and Linux
+		local permissions
+		local uid
+		local gid
+		local size
+		local month
+		local day
+		local file
+		ls -a -l -L -n "$folderPath" | while IFS=' ' read -r permissions uid gid size month day file
+		do
+			if [ "$permissions" = 'total' ]; then
+				continue
+			fi
+			if [ "$file" != '.' ]; then
+				break
+			fi
+			
+			echo FIXME
+			exit 50
+		done
+		
+	}
+		
+	Before parsing, rush checks the ownership and permissions of the configuration file for possible security breaches. The configuration file is
+	considered unsafe if any of the following conditions are met:
+	
+	#    It is not owned by root.
+	#    It is group writable.
+	#    It is world writable.
+	#    It resides in a group writable directory.
+	#    It resides in a world writable directory.
+	#    It is a symbolic link to a file residing in a group or world writable directory. 
+	
+	# resolve symbolic link fully
+	
+	xxx: Need to make sure we dont load config files more than once
+	xxx: This is problematic if they contain spaces - could we use an eval?
+	
+	# Security Protection: So, if a more global script unsets an environment variable or makes it readonly but empty, then the environment variable directed file will be ignored unless we're hacked using gdb https://stackoverflow.com/questions/17397069/unset-readonly-variable-in-bash.
+	# This can be defended against only by adding to the blacklist in one of the '/etc' files.
+	# NOTE: HOME is required under dash, ksh and zsh for '~' unless we use '~$LOGNAME' or '~$USER'
+	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFile "${core_init_rootPath}"/etc/"${core_libraryName}"rc
+	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFolder "${core_init_rootPath}"/etc/"${core_libraryName}"rc.d
+	
+	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFile "${core_init_rootPath}"/etc/"${global_ourName}"rc
+	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFolder "${core_init_rootPath}"/etc/"${global_ourName}"rc.d
+	
+	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFile HOME /."${core_libraryName}"rc
+	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFolder HOME /."${core_libraryName}"rc.d
+	
+	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFile ${core_libraryName}_RC ''
+	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFolder ${core_libraryName}_RC_D ''
+	
+	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFile HOME /."${global_ourName}"rc
+	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFolder HOME /."${global_ourName}"rc.d
+	
+	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFile ${global_ourName}_RC ''
+	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFolder ${global_ourName}_RC_D ''
+}
+
+core_usesIn core compatibility
+core_configuration_defaults()
+{
+	# /opt/<package-name>, /bin, /usr/bin, /usr/local/bin, $HOME/bin installation locations? /sbin et al, too?
+	
+	# A more sophisticated scheme would use locale -a and hunt for an UTF-8 locale, but language needs to be stable over multiple invocations if data is persistent
+	# Can also be 'en_GB.UTF-8' or 'C' (but that's not unicode aware)
+	core_compatibility_setVariableIfUnset core_init_language 'en_US.UTF-8'
+	core_compatibility_setVariableIfUnset core_init_verbosity 0
+}

@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec -a dash "$(brew --prefix dash)"/bin/dash "$@"

@@ -1,0 +1,46 @@
+readonly core_libraryName=shellfire
+
+core_message()
+{
+	local messageKind="$1"
+	local message="$2"
+	
+	local shouldEcho
+	case "$messageKind" in
+	
+		FAIL)
+			shouldEcho=1
+		;;
+		
+		WARN)
+			shouldEcho=1
+		;;
+	
+		INFO)
+			if [ $core_init_verbosity -gt 0 ]; then
+				shouldEcho=1
+			fi
+		;;
+	
+		DEBUG)
+			if [ $core_init_verbosity -gt 1 ]; then
+				shouldEcho=1
+			fi
+		;;
+	
+		*)
+			shouldEcho=1
+		;;
+
+	esac
+	
+	if [ $shouldEcho -eq 1 ]; then
+		printf '%s\n' "$global_ourName: $messageKind: $message" 1>&2
+	fi
+}
+
+core_exitError()
+{
+	core_message FAIL "$1"
+	exit 1
+}

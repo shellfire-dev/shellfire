@@ -1,0 +1,213 @@
+core_trap_addOnCleanUp()
+{
+	core_trap_addOnTrapEXIT "$1"
+	core_trap_addOnTrapINT "$1"
+	core_trap_addOnTrapTERM "$1"
+	# should use exit code 3
+	core_trap_addOnTrapABRT "$1"
+	core_trap_addOnTrapQUIT "$1"
+	core_trap_addOnTrapPIPE "$1"
+}
+
+_core_trap_executeOnTrap()
+{
+	local handler
+	for handler in "$@"
+	do
+		$handler
+	done
+}
+
+core_trap_handlersEXIT=''
+
+core_trap_executeOnTrapEXIT()
+{
+	_core_trap_executeOnTrap $core_trap_handlersEXIT
+}
+
+core_trap_addOnTrapEXIT()
+{
+	local handler="$1"
+	core_trap_handlersEXIT="$core_trap_handlersEXIT $handler"
+}
+
+trap core_trap_executeOnTrapEXIT EXIT
+
+#core_trap_handlersDEBUG=''
+#
+#core_trap_executeOnTrapDEBUG()
+#{
+#	_core_trap_executeOnTrap $core_trap_handlersDEBUG
+#}
+
+#core_trap_addOnTrapDEBUG()
+#{
+#	local handler="$1"
+#	core_trap_handlersDEBUG="$core_trap_handlersDEBUG $handler"
+#}
+
+#trap core_trap_executeOnTrapDEBUG DEBUG
+
+core_trap_handlersHUP=''
+
+core_trap_executeOnTrapHUP()
+{
+	_core_trap_executeOnTrap $core_trap_handlersHUP
+}
+
+core_trap_addOnTrapHUP()
+{
+	local handler="$1"
+	core_trap_handlersHUP="$core_trap_handlersHUP $handler"
+}
+
+trap core_trap_executeOnTrapHUP HUP
+
+# Ctrl-C: terminate gracefully
+core_trap_handlersINT=''
+
+core_trap_executeOnTrapINT()
+{
+	_core_trap_executeOnTrap $core_trap_handlersINT
+}
+
+core_trap_addOnTrapINT()
+{
+	local handler="$1"
+	core_trap_handlersINT="$core_trap_handlersINT $handler"
+}
+
+trap core_trap_executeOnTrapINT INT
+
+# Ctrl-\: terminate and dump core
+core_trap_handlersQUIT=''
+
+core_trap_executeOnTrapQUIT()
+{
+	_core_trap_executeOnTrap $core_trap_handlersQUIT
+}
+
+core_trap_addOnTrapQUIT()
+{
+	local handler="$1"
+	core_trap_handlersQUIT="$core_trap_handlersQUIT $handler"
+}
+
+trap core_trap_executeOnTrapQUIT QUIT
+
+# ILL, TRAP
+
+core_trap_handlersABRT=''
+
+core_trap_executeOnTrapABRT()
+{
+	_core_trap_executeOnTrap $core_trap_handlersABRT
+}
+
+core_trap_addOnTrapABRT()
+{
+	local handler="$1"
+	core_trap_handlersABRT="$core_trap_handlersABRT $handler"
+}
+
+trap core_trap_executeOnTrapABRT ABRT
+
+# EMT, FPE, KILL, BUS, SEGV, SYS
+
+core_trap_handlersPIPE=''
+
+core_trap_executeOnTrapPIPE()
+{
+	_core_trap_executeOnTrap $core_trap_handlersPIPE
+}
+
+core_trap_addOnTrapPIPE()
+{
+	local handler="$1"
+	core_trap_handlersPIPE="$core_trap_handlersPIPE $handler"
+}
+
+trap core_trap_executeOnTrapPIPE PIPE
+
+# ALRM
+
+core_trap_handlersTERM=''
+
+core_trap_executeOnTrapTERM()
+{
+	_core_trap_executeOnTrap $core_trap_handlersTERM
+}
+
+core_trap_addOnTrapTERM()
+{
+	local handler="$1"
+	core_trap_handlersTERM="$core_trap_handlersTERM $handler"
+}
+
+trap core_trap_executeOnTrapTERM TERM
+
+# URG, STOP
+
+# Ctrl-Z: suspend execution
+core_trap_handlersTSTP=''
+
+core_trap_executeOnTrapTSTP()
+{
+	_core_trap_executeOnTrap $core_trap_handlersTSTP
+}
+
+core_trap_addOnTrapTSTP()
+{
+	local handler="$1"
+	core_trap_handlersTSTP="$core_trap_handlersTSTP $handler"
+}
+
+trap core_trap_executeOnTrapTSTP TSTP
+
+# TSTP, CONT, CHLD, TTIN, TTOU, IO, XCPU, XFSZ, VTALRM, PROF, WINCH
+
+# Ctrl-T sends INFO
+core_trap_handlersINFO=''
+
+core_trap_executeOnTrapINFO()
+{
+	_core_trap_executeOnTrap $core_trap_handlersINFO
+}
+
+core_trap_addOnTrapINFO()
+{
+	local handler="$1"
+	core_trap_handlersINFO="$core_trap_handlersINFO $handler"
+}
+
+trap core_trap_executeOnTrapINFO INFO
+
+core_trap_handlersUSR1=''
+
+core_trap_executeOnTrapUSR1()
+{
+	_core_trap_executeOnTrap $core_trap_handlersUSR1
+}
+
+core_trap_addOnTrapUSR1()
+{
+	local handler="$1"
+	core_trap_handlersUSR1="$core_trap_handlersUSR1 $handler"
+}
+
+trap core_trap_executeOnTrapUSR1 USR1
+
+core_trap_handlersUSR2=''
+
+core_trap_executeOnTrapUSR2()
+{
+	_core_trap_executeOnTrap $core_trap_handlersUSR2
+}
+
+core_trap_addOnTrapUSR2()
+{
+	local handler="$1"
+	core_trap_handlersUSR2="$core_trap_handlersUSR2 $handler"
+}
+
+trap core_trap_executeOnTrapUSR2 USR2

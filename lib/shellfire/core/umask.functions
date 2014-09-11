@@ -1,0 +1,5 @@
+# Done so scripts can rely on a sane value
+core_umask_setDefault()
+{
+	umask 022
+}

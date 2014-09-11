@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec -a ksh "$(brew --prefix pdksh)"/bin/ksh "$@"

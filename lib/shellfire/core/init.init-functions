@@ -1,0 +1,232 @@
+#@SHELLFIRE_INIT_BEGIN@#
+core_init_init()
+{
+	set -e
+	set -u
+}
+
+core_init_setSaneEnvironmentDefaults()
+{
+	set +o allexport
+	set +o emacs
+	set -o errexit
+	set +o ignoreeof
+	set +o monitor
+	set +o noclobber
+	set +o noexec
+	set +o noglob
+	set +o nolog
+	set +o notify
+	set -o nounset
+	set +o verbose
+	set +o vi
+	
+	# unset will fail if, and only if, we've been source'd and they have been made readonly. Unlikely.
+	
+	# MUST be unset before making use of cd
+	unset CDPATH
+	unset HISTSIZE
+	unset MAILCHECK
+	unset MAILPATH
+	unset ENV
+	
+	# bash specific, but since at this stage of execution we can't be sure we're running under bash, we do nothing
+	unset BASH_ENV
+	unset BASH_XTRACEFD
+	unset FCEDIT
+	unset FIGNORE
+	unset FUNCNEST
+	unset GLOBIGNORE
+	unset HISTCONTROL
+	unset HISTFILE
+	unset HISTFILESIZE
+	unset HISTIGNORE
+	unset HISTTIMEFORMAT
+	unset HOSTFILE
+	unset IGNOREEOF
+	unset INPUTRC
+	unset MAIL
+	unset TMOUT
+}
+
+# http://mywiki.wooledge.org/BashFAQ/028 on $0
+# http://mywiki.wooledge.org/Bashism?action=show&redirect=bashism
+# realpath vs readlink, and supported OS (comments): https://unix.stackexchange.com/questions/136494/whats-the-difference-between-realpath-and-readlink-f
+core_init_findOurNameAndPath()
+{
+	readonly global_ourSymlinkName="$(core_compatibility_basename "$0")"
+	
+	# Temporary assignment
+	global_ourName="$global_ourSymlinkName"
+	
+	# can be empty if 'bash file' used or 'bash </path/to/file' or ksh with PATH containing '.'
+	local potential_global_ourSymlinkPath="${0%/*}"
+	if [ -z "$potential_global_ourSymlinkPath" ]; then
+		core_exitError "Do not invoke this program either by specifying a shell interpreter on a file in the current working directory (eg bash '$0') or redirecting from a pipe into a shell interpreter (eg bash [-c] <'$0') or by using ksh with a PATH containing '.'"
+	fi
+	
+	# At this point, we resolve $0 vs the current working directory
+	# If we were exec'd, we have either a relative or an absolute path
+	cd "$potential_global_ourSymlinkPath" 1>/dev/null
+		readonly global_ourSymlinkPath="$(pwd)"
+	cd - >/dev/null
+	
+	cd -P "$potential_global_ourSymlinkPath" 1>/dev/null
+		readonly global_ourPath="$(pwd)"
+	cd - >/dev/null
+	
+	# We can only follow symlinks with readlink (which doesn't work if $0 ends in \n)
+	# readlink is not on AIX, some Solaris
+	# realpath is quite rare, unfortunately, as it is perfectly suited (but it is in coreutils, so will become more common)
+	if core_compatibility_whichNoOutput readlink; then
+		local potentialSymlink="$0"
+		while readlink "$potentialSymlink"
+		do
+			potentialSymlink="$(readlink "$potentialSymlink")"
+		done
+		readonly global_ourName="$(core_compatibility_basename "$potentialSymlink")"
+	elif core_compatibility_whichNoOutput realpath; then
+		readonly global_ourName="$(core_compatibility_basename "$(realpath "$0")")"
+	else
+		readonly global_ourName="$global_ourSymlinkName"
+	fi
+	
+	# eg due to the fact we store the program names in a whitespace-separated variable for tracing (shellfire_trace)
+	_core_init_findOurNameAndPath_checkForWhitespaceInName()
+	{
+		local programName="$1"
+		local left
+		local right
+		read -r left right <<-EOF
+			$programName
+		EOF
+		if [ -n "$right" ]; then
+			core_exitError "We can not support program names (such as '$programName') with whitespace in them"
+		fi
+	fi
+	_core_init_findOurNameAndPath_checkForWhitespaceInName "$global_ourName"
+	_core_init_findOurNameAndPath_checkForWhitespaceInName "$global_ourSymlinkName"
+	
+	readonly global_ourSymlinkExecutablePath="$global_ourSymlinkPath"/"$global_ourSymlinkName"
+}
+
+core_init_doNotRunAsSetUidOrSetGid()
+{
+	# Not a great defence; real purpose is to defeat a sysadmin making this script setuid/setgid:-
+	# * Happens too late, really - the shell interpreter is running
+	# * bash allows functions to be exported that can replace builtins (even the builtin builtin)
+	
+	if [ -u "$global_ourSymlinkExecutablePath" ]; then
+		core_exitError "We can not be run with the setuid bit set"
+	fi
+	
+	if [ -g "$global_ourSymlinkExecutablePath" ]; then
+		core_exitError "We can not be run with setgid bit set"
+	fi
+}
+
+core_init_setTracing()
+{
+	case "$-" in
+		
+		*x*)
+			if core_compatibility_testVariableIsSet shellfire_trace; then
+				export shellfire_trace="$global_ourSymlinkName"
+			else
+				export shellfire_trace="$shellfire_trace $global_ourSymlinkName"
+			fi
+		;;
+		
+		*)
+			if core_compatibility_testVariableIsSet shellfire_trace; then
+				local program
+				for program in $shellfire_trace
+				do
+					if [ "$program" = "$global_ourSymlinkName" ]; then
+						set -x
+						break
+					fi
+				done
+			fi
+		;;
+		
+	esac
+}
+
+core_init_determinePreferredShell()
+{
+	local shebang_path
+	local shebang_shell
+	local remainder
+	local comment
+	local shebang_path
+	
+	IFS=' ' read -r commented_shebang_path shebang_shell remainder <"$global_ourSymlinkExecutablePath"
+	if [ -n "$remainder" ]; then
+		core_exitError "Passing options to a shell ('#!$shebang_path $shebang_shell $remainder') is not supported"
+	fi
+	IFS='!' read -r comment shebang_path <<-EOF
+		$commented_shebang_path
+	EOF
+	
+	if [ -z "$shebang_shell" ]; then
+		global_preferredShell="$(core_compatibility_basename "$shebang_path")"
+	else
+		if [ "$shebang_path" != '/usr/bin/env' ]; then
+			core_exitError "All shell scripts should use '/usr/bin/env' with a shell, not #!$shebang_path $shebang_shell"
+		fi
+		global_preferredShell="$shebang_shell"
+	fi
+}
+
+# Ensures we run under a shell interpreter that we were designed for - no matter what is specified in the shebang
+# This works around packaging tools that want '#!/bin/bash', but point to an old version. Needs to be coupled into loading new shell versions.
+core_init_rexecUnderCorrectShell()
+{
+	if core_compatibility_testVariableIsSet core_init_shell_rexecing; then
+		if [ "$core_init_shell_rexecing" = "$$" ]; then
+			# we've been successfully re-exec'd
+			unset core_init_shell_rexecing
+			return 0
+		fi
+	fi
+	
+	if ! core_compatibility_whichNoOutput "$global_preferredShell"; then
+		core_exitError "Preferred shell '$global_preferredShell' does not exist on the PATH"
+	fi
+	local shellPath="$(core_compatibility_which "$global_preferredShell")"
+	
+	# exec -a doesn't work in dash
+	core_init_shell_rexecing=$$ exec "$shellPath" "$global_ourSymlinkExecutablePath" "$@"
+}
+
+# goal is to create three forms of executable
+# * one that is completely standalone, including paths files [but can still make use of overrides]
+# * one that is completely standalone, excluding paths files and with functions in /lib
+#   * possible variant that shares functions? ?why? creates unnecesary version tensions, requires ABI compat, etc - a bit like shared libraries today
+#   * if not the above, then core_init_functionsPath
+# * one that can run from checkout of git & git submodules
+
+# paths files are composable
+# * work simply by combining those defined in shellfire with local choices
+# * allow local, git friendly, replacements OR additions
+
+# first two forms are going to require a kind of build process
+core_init_main()
+{
+	core_init_init
+	core_init_setSaneEnvironmentDefaults
+	core_init_findOurNameAndPath
+	core_init_setTracing
+	core_init_determinePreferredShell
+	core_init_rexecUnderCorrectShell "$@"
+	
+	# Risky but should work
+	
+	xxxx core_init_functionsPath is still being used in core_use()
+	
+	. "$global_ourPath"/lib/core/core.functions
+}
+
+core_init_main "$@"
+#@SHELLFIRE_INIT_END@#

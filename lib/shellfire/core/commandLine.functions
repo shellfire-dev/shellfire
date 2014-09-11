@@ -1,0 +1,180 @@
+core_commandLine_helpMessage()
+{
+	printf '%s' "${global_ourName}
+$_program_commandLine_helpMessage_description
+
+Usage 1: ${global_ourName} -h|--help
+Usage 2: ${global_ourName} [-v|--verbose]${_program_commandLine_helpMessage_optionsAndNonOptions}
+
+Usages
+    1       Show Help
+    2       $_program_commandLine_helpMessage_usageMessage
+
+Options without Argments
+    Switch  Long-Switch  Explanation            Default
+    -h      --help       show this help
+    -v      --verbose    be more verbose        ${core_init_verbosity}"
+
+	if [ -n "$_program_commandLine_helpMessage_argumentedOptions" ]; then
+		printf '%s' "$_program_commandLine_helpMessage_argumentedOptions"
+	else
+		printf '\n'
+	fi
+	
+	if [ -n "$_program_commandLine_helpMessage_argumentlessOptions" ]; then
+		printf '%s' "Options with Arguments
+Switch  Default
+$_program_commandLine_helpMessage_argumentlessOptions"
+	else
+		:
+	fi
+	
+	if [ -n "$_program_commandLine_helpMessage_nonOptionArguments" ]; then
+		printf '%s' "Non-Options
+$_program_commandLine_helpMessage_nonOptionArguments
+Specify -- before the non-options to separate them from option arguments"
+	fi
+
+	printf '%s' "
+Path Files
+A path file is used to define the location of essential programs used during initial bootstrapping. It also defines a packageManager
+to automatically install any missing dependencies.
+"
+}
+
+core_commandLine_exitHelp()
+{
+	core_commandLine_helpMessage 1>&2
+	exit 2
+}
+
+core_commandLine_setLanguageDefaultsSoSortIsStableAndAnyErrorMessageParsingLogicIsReliable()
+{
+	unset LANG
+	unset LC_COLLATE
+	unset LC_CTYPE
+	unset LC_MESSAGES
+	unset LC_MONETARY
+	unset LC_NUMERIC
+	unset LC_TIME
+	unset LC_ALL
+
+	export LANG="$core_commandLine_language"
+	export LC_COLLATE="$core_commandLine_language"
+	export LC_CTYPE="$core_commandLine_language"
+	export LC_MESSAGES="$core_commandLine_language"
+	export LC_MONETARY="$core_commandLine_language"
+	export LC_NUMERIC="$core_commandLine_language"
+	export LC_TIME="$core_commandLine_language"
+	export LC_ALL=""
+	
+	# ? Also LANGUAGE, a GNU gettext extension?
+	# ignored if locale is set to 'C'
+	# pt is same as pt_PT for this variable
+	# export LANGUAGE=sv:de  for swedish then german
+}
+
+core_commandLine_parse_longOption()
+{
+	longOptionValue="${!OPTIND}"
+	OPTIND=$((OPTIND+1))
+	longOptionName="$OPTARG"
+}
+
+core_commandLine_parse_longOption_noValue()
+{
+	core_commandLine_parse_longOption
+	if [ -n "$longOptionValue" ]; then
+		core_commandLine_exitError "The --${longOptionName} option does not take arguments (eg '${longOptionValue}')"
+	fi
+}
+
+core_commandLine_parse_longOptionEquals()
+{
+	longOptionValue="${OPTARG#*=}"
+	longOptionName="${OPTARG%=$longOptionValue}"
+}
+
+core_commandLine_parse_longOptionEquals_noValue()
+{
+	core_commandLine_parse_longOptionEquals
+	if [ -n "$longOptionValue" ]; then
+		core_commandLine_exitError "The --${longOptionName} option does not take arguments (eg '${longOptionValue}')"
+	fi
+}
+
+core_commandLine_parse_longOptionUnknown()
+{
+	if [ "$OPTERR" = 1 ] && [ "${optspec:0:1}" != ":" ]; then
+		core_commandLine_exitError "Invalid option --${OPTARG}"
+	fi
+}
+
+core_commandLine_parse()
+{
+	local getoptsStringExtra="$1"
+	local getoptsString=":hv-:${getoptsStringExtra}"
+
+	local OPTERR=1
+	local OPTIND=1
+	local OPTARG
+	local option
+	local longOptionValue
+	local longOptionName
+	while getopts "$getoptsString" option
+	do
+		# https://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options/7680682
+		case "$option" in
+		
+			-)
+				case "$OPTARG" in
+				
+					help)
+						core_commandLine_parse_longOption_noValue
+						core_commandLine_exitHelp
+					;;
+				
+					help=*)
+						core_commandLine_parse_longOptionEquals_noValue
+					;;
+				
+					verbose)
+						core_commandLine_parse_longOption_noValue
+						core_commandLine_verbosity=$((core_commandLine_verbosity+1))
+					;;
+				
+					verbose=*)
+						core_commandLine_parse_longOptionEquals_noValue
+					;;
+				
+					*)
+						_program_commandLine_handleLongOption
+					;;
+				
+				esac
+			;;
+		
+			h)
+				core_commandLine_exitHelp
+			;;
+		
+			v)
+				core_commandLine_verbosity=$((core_commandLine_verbosity+1))
+			;;
+		
+			'?')
+				core_commandLine_exitError "Invalid option -${OPTARG}"
+			;;
+		
+			*)
+				_program_commandLine_handleShortOption
+			;;
+		
+		esac
+	done
+	
+	shift $((OPTIND - 1))
+	_program_commandLine_handleNonOptions "$@"
+	
+	_program_commandLine_validate
+}

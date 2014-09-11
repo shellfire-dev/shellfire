@@ -1,0 +1,12 @@
+It is intended that each folder under here is a separate repository in github
+eg core
+eg cpucount
+eg miscellany
+
+in github, they would be called
+shellfire-core
+shellfire-cpucount
+shellfire-miscellany
+(or shellfire/core, etc)
+
+the shellfire repository would link them as submodules

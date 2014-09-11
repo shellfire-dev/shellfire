@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec -a ksh93 "$(brew --prefix ksh)"/bin/ksh93 "$@"

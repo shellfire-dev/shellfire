@@ -1,0 +1,180 @@
+core_usesIn core functions
+core_usesIn core/dependency check
+
+core_dependency_requiresProgram()
+{
+	local programName="$1"
+	shift 1
+	local operatingSystem
+	for operatingSystem in "$@"
+	do
+		:
+	done
+}
+
+core_dependency_functions=''
+
+core_dependency_functionRegister()
+{
+	core_dependency_functions="$core_dependency_functions $@"
+}
+
+# Also MACHTYPE
+# Also HOSTTYPE
+# Also OSTYPE
+# Also uname -s (part of coreutils, often at /bin/uname, so quite reliably present)
+# See Gnu shtool http://www.gnu.org/software/shtool/ (slow)
+# See Gnu config.guess http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob;f=config.guess;hb=HEAD (yuck)
+# See uname -s list at wikipedia https://en.wikipedia.org/wiki/Uname
+# See getconf (part of IEEE Std 1003.1-2001 / Posix.1), part of libc-bin on Ubuntu, for other neat stuff
+core_dependency_osFamily=''
+core_dependency_determineOsFamily()
+{
+	# only works for bash!!!
+		
+	case "$OSTYPE" in
+		
+		cygwin)
+			core_dependency_osFamily=cygwin
+		;;
+		
+		# eg linux-gnu
+		linux*)
+			core_dependency_osFamily=linux
+		;;
+		
+		# Part of MinGW, eg Git Bash and msysGit
+		msys)
+			core_dependency_osFamily=msys
+		;;
+		
+		# darwin12 [Mountain Lion], darwin9.0 [Leopard]
+		darwin*)
+			core_dependency_osFamily=macosx
+		;;
+		
+		# ?
+		solaris*)
+			core_dependency_osFamily=solaris
+		;;
+		
+		# ?
+		# netbsd is known; freebsd et al are guesses
+		netbsd|freebsd|openbsd)
+			core_dependency_osFamily=bsd
+		;;
+		
+		*)
+			core_dependency_osFamily="$OSTYPE"
+		;;
+		
+	esac
+	
+	# the ostype windows is also reserved but isn't obviously useful
+}
+core_functions_register core_dependency_functions core_dependency_determineOsFamily
+
+core_dependency_ensureWeAreRunningBash4()
+{
+	if [ "$global_preferredShell" = 'bash' ]; then
+		if [ "${BASH_VERSINFO[0]}" != "4" ]; then
+			# Of major OS vendors, only RHEL 6 / CentOS 6 still use bash 4.1 (which lacks some declare syntax for arrays)
+			local errorMessage='You are not using bash 4'
+			case "$core_dependency_osFamily" in
+				
+				msys)
+					errorMessage="${errorMessage}. MinGW, git-bash (msysGit / Git for Windows https://msysgit.github.io/) and other MSYS based Windows products ship an obsolete version of bash (which could be upgraded according to this thread http://mingw.5.n7.nabble.com/bash-4-x-for-MSYS-td5605.html). Please use Cygwin instead"
+				;;
+				
+			if [ "$core_dependency_osFamily" = 'macosx' ]; then
+				errorMessage="${errorMessage}. On Mac OS X, install Homebrew (see http://brew.sh/ ) and then  brew install bash ."
+			fi
+			core_exitError "$errorMessage"
+		fi
+		if [ "${BASH_VERSINFO[1]}" -lt 2 ]; then
+			# Ubuntu 14.04 using 4.3, 12.04 uses 4.2; 10.04 is obsolete in 8 months
+			# AIX using 4.2
+			# OpenSolaris 11 shipped 4.1
+			# RHEL6/CentOS6 shipped 4.1
+			# Cygwin using 4.1
+			# Mac OS X using 3.2 (still)
+			# MinGW uses 3.1 (!)
+			core_exitError "You are not using at least bash 4.2 (Feb 2011; of major Linux distros still supported, only RHEL 6 / CentOS 6 still has bash 4.1)?"
+		fi
+	fi
+}
+core_functions_register core_dependency_functions core_dependency_ensureWeAreRunningBash4
+
+core_dependency_determineDistributionName()
+{
+	local core_dependency_check_function
+	for core_dependency_check_function in $core_dependency_check_functions
+	do
+		if $core_dependency_check_function; then
+			return 0
+		fi
+	done
+	
+	# Alternatively, we can use /etc/debian_version's presence in a check above
+	# Or parse /etc/lsb-release for DISTRIB_ID
+	if core_compatibility_whichNoOutput lsb_release; then
+		local lsbDistributor="$(lsb_release --id --short)"
+		if [ -n "$lsbDistributor" ]; then
+			readonly core_dependency_distributionName="$lsbDistributor"
+			return 0
+		fi
+	fi
+	
+	core_exitError "Could not determine distribution"
+}
+core_functions_register core_dependency_functions core_dependency_determineDistributionName
+
+core_dependency_setUpAliases()
+{
+	# eg paths.d
+	local pathsFile="$core_init_pathsFolderPath"/"$core_dependency_distributionName".path
+	if [ ! -f "$pathsFile" ]; then
+		return 0
+	fi
+	
+	# changing PATH clears the hash table - remember!
+	# current design DOES NOT set up a suitable path environment for fork'd programs, eg cmake
+	
+	# enable hashing
+	set -h
+	
+	declare -A unaliasedBinaries
+	declare -A installPackages
+	local packageName
+	local binaryName
+	local absolutePath
+	while IFS=' ' read -r packageName binaryName absolutePath
+	do
+		if [ -x "$absolutePath" ]; then
+			hash -p "$absolutePath" "$binaryName"
+		else
+			if [ "$packageName" = "zzz-built-in" ]; then
+				core_exitError "Essential binary $binaryName not in expected path $absolutePath and no installation is possible"
+			fi
+			unaliasedBinaries["${binaryName}"]="$absolutePath"
+			installPackages["${packageName}"]=1
+		fi
+	done <"$pathsFile"
+	
+	if [ ${#installPackages[@]} -ne 0 ]; then
+		core_message WARN "Installing missing packages ${!installPackages[@]}"
+		core_dependency_check_${core_dependency_distributionName}_packageManager "${!installPackages[@]}"
+		for binaryName in "${!unaliasedBinaries[@]}"
+		do
+			absolutePath="${unaliasedBinaries["${binaryName}"]}"
+			hash -p "$absolutePath" "$binaryName"
+		done
+	fi
+	
+}
+core_functions_register core_dependency_functions core_dependency_setUpAliases
+
+core_dependency_installDependencies()
+{
+	core_functions_execute core_dependency_functions "$@"
+}

@@ -1,0 +1,14 @@
+core_dependency_check_Cygwin_checkFunction()
+{
+	if [ -x /bin/cygcheck.exe ]; then
+		readonly core_dependency_distributionName="Cygwin"
+		return 0
+	fi
+	return 1
+}
+core_dependency_check_register core_dependency_check_Cygwin_checkFunction
+
+core_dependency_check_Cygwin_packageManager()
+{
+	core_exitError "Please run the Cygwin setup-x86.exe to install the packages $@"
+}

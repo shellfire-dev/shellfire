@@ -1,0 +1,38 @@
+core_dependency_check_Homebrew_checkFunction()
+{
+	if core_compatibility_whichNoOutput brew; then
+		readonly core_dependency_distributionName="Homebrew"
+		return 0
+	fi
+	return 1
+}
+core_dependency_check_register core_dependency_check_Homebrew_checkFunction
+
+core_dependency_check_Homebrew_packageManager()
+{
+	if [ $# -eq 0 ]; then
+		return 0
+	fi
+	
+	local packageToInstall
+	local tap
+	local package
+	for packageToInstall in "$@"
+	do
+		tap="$(core_compatibility_dirname "$packageToInstall")"
+		if [ "$tap" != '.' ]; then
+			# eg diffutils, openssh, awk, rsync, gcc (homebrew/versions)
+			brew tap "$tap" 1>/dev/null 2>/dev/null
+		fi
+	done
+	
+	brew update
+	
+	for packageToInstall in "$@"
+	do
+		package="$(core_compatibility_basename "$packageToInstall")"
+		brew install "$package"
+	done
+	
+	# fakeroot required a  brew link
+}

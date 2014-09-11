@@ -1,0 +1,10 @@
+core_dependency_check_Fedora_checkFunction()
+{
+	core_dependency_check_releaseFile fedora-release Fedora
+}
+core_dependency_check_register core_dependency_check_Fedora_checkFunction
+
+core_dependency_check_Fedora_packageManager()
+{
+	core_dependency_check_CentOS_packageManager
+}

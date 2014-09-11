@@ -1,0 +1,10 @@
+core_dependency_check_RedHat_checkFunction()
+{
+	core_dependency_check_releaseFile redhat-release RedHat
+}
+core_dependency_check_register core_dependency_check_RedHat_checkFunction
+
+core_dependency_check_RedHat_packageManager()
+{
+	core_dependency_check_CentOS_packageManager
+}

@@ -1,0 +1,24 @@
+core_dependency_check_functions=''
+
+core_dependency_check_register()
+{
+	if [ -z "$core_dependency_check_functions" ]; then
+		core_dependency_check_functions="$1"
+	else
+		core_dependency_check_functions="$core_dependency_check_functions $1"
+	fi
+}
+
+core_dependency_check_releaseFile()
+{
+	local releaseFileName="$1"
+	local distributionName="$2"
+	
+	if [ -f /etc/"$releaseFileName" ]; then
+		readonly core_dependency_distributionName="$distributionName"
+		return 0
+	fi
+	return 1
+}
+
+core_usesIn core/dependency/check CentOS Cygwin Fedora Homebrew Mandrake RedHat SuSE
