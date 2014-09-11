@@ -9,7 +9,8 @@ script: "./build"
 notifications:
   email:
     on_success: change
-    on_failure: always 
+    on_failure: always
+#http://docs.travis-ci.com/user/encrypting-files/
 after_success:
   - chmod 0600 .travis/deploy_key.pem
   - ssh-add .travis/deploy_key.pem
