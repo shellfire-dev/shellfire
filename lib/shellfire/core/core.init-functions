@@ -27,6 +27,10 @@ core_message()
 				shouldEcho=1
 			fi
 		;;
+		
+		TODO)
+			shouldEcho=1
+		;;
 	
 		*)
 			shouldEcho=1
@@ -43,6 +47,11 @@ core_exitError()
 {
 	core_message FAIL "$1"
 	exit 1
+}
+
+core_TODO()
+{
+	core_message TODO "$*"
 }
 
 _core_usesAlreadySourced=''
