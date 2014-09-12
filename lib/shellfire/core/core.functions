@@ -21,9 +21,6 @@ core_functions_register core_functions \
 
 core_executeProgram()
 {
-	echo $core_functions
-	exit 50
-	
 	core_functions_execute core_functions "$@"
 	_program
 }
