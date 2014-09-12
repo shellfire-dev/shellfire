@@ -69,7 +69,7 @@ core_uses()
 		moduleName="$(core_compatibility_basename "$namespacedModule")"
 		sourced=0
 		for relativeFunctionsFilePath in "$namespacedModule"."$global_preferredShell" "$namespacedModule" "$namespacedModule"/"$moduleName"."$global_preferredShell" "$namespacedModule"/"$moduleName"
-		done
+		do
 			functionsFilePath="$core_init_functionsPath"/"$core_libraryName"/"$relativeFunctionsFilePath".functions
 			if [ -f "$functionsFilePath" ]; then
 				. "$functionsFilePath" || core_exitError "Can not load functions '$functionsFilePath'"

@@ -2,6 +2,8 @@
 set -e
 set -u
 
+# TODO: core_uses and core_functions_register are 'special' functions that a simple sourcing compiler writes stubs for
+
 # goal is to create three forms of executable
 # * one that is completely standalone, including paths files [but can still make use of overrides]
 # * one that is completely standalone, excluding paths files and with functions in /lib
@@ -15,7 +17,7 @@ set -u
 
 compile_deduceRepositoryFolerPath()
 {
-	if [ "${TRAVIS_BUILD_DIR+unset}" = 'unset' ]; then
+	if [ "${TRAVIS_BUILD_DIR+set}" = 'set' ]; then
 		readonly compile_repositoryFolderPath="$TRAVIS_BUILD_DIR"
 	else
 		# We could enforce a standard, like $HOME/Documents/<repo>
@@ -25,7 +27,7 @@ compile_deduceRepositoryFolerPath()
 	# TRAVIS_COMMIT='ab8186e73e9676d2c547f07b309499ebeed27ec0'
 }
 
-compile_sourceInitFunctions()
+_compile_sourceInitFunctionsRecursively()
 {
 	local parentPath="$1"
 	
@@ -33,7 +35,7 @@ compile_sourceInitFunctions()
 	for fileOrFolder in "$1"/*
 	do
 		if [ -d "$fileOrFolder" ]; then
-			compile_sourceInitFunctions "$fileOrFolder"
+			_compile_sourceInitFunctionsRecursively "$fileOrFolder"
 		elif [ -f "$fileOrFolder" ]; then
 			if [ "${fileOrFolder##*.}" = 'init-functions' ]; then
 				. "$fileOrFolder"
@@ -42,11 +44,33 @@ compile_sourceInitFunctions()
 	done
 }
 
+compile_sourceInitFunctions()
+{
+	local libraryFunctionsFolderPath="$core_init_functionsPath"/shellfire
+	if [ ! -d "$libraryFunctionsFolderPath" ]; then
+		printf '%s\n' "Can not find '$libraryFunctionsFolderPath' - did you run this script from the root of the repository?"
+	fi
+	_compile_sourceInitFunctionsRecursively "$libraryFunctionsFolderPath"
+}
 
 compile_deduceRepositoryFolerPath
-readonly core_init_functionsPath="$compile_repositoryFolderPath"/lib
-compile_sourceInitFunctions "$core_init_functionsPath"/lib/shellfire
+core_init_functionsPath="$compile_repositoryFolderPath"/lib
+compile_sourceInitFunctions
 core_init_main "$@"
+
+# add a shebang line
+# copy all .init-functions files into a file
+# set the variable  core_init_functionsPath
+# if not compiling:-
+#  * add a core_init_functionsPath=XXXX definition [perhaps as $(core_init_computeFunctionsPath)]
+#  * add a core_init_main "$@"
+#  * repeat for sh, dash, bash
+# else:-
+#  * create special  cores_uses  and  core_functions_register  functions
+#  * explicitly call  core_uses core
+#  *  source program code
+#  * add a core_init_functionsPath=XXXX definition
+#  * add a core_init_main "$@"
 
 # we assemble this file, effectively, and so should include a revision_blob or somesuch so we can tell if we're out-of-date
 # if it ends .init-functions, it goes in here. Order only matters for the final line  init_main "$@"  but we could generate that

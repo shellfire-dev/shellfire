@@ -102,7 +102,7 @@ core_init_findOurNameAndPath()
 		if [ -n "$right" ]; then
 			core_exitError "We can not support program names (such as '$programName') with whitespace in them"
 		fi
-	fi
+	}
 	_core_init_findOurNameAndPath_checkForWhitespaceInName "$global_ourName"
 	_core_init_findOurNameAndPath_checkForWhitespaceInName "$global_ourSymlinkName"
 	
@@ -208,6 +208,11 @@ core_init_main()
 	core_init_determinePreferredShell
 	core_init_rexecUnderCorrectShell "$@"
 	
-	# relies on core_init_functionsPath
-	core_uses core
+	# This is WITHIN a function call, so a simple sourcing compiler can't make use of it
+	if [ "$(core_compatibility_testVariableIsSet _program_commandLine_helpMessage_description)" ]; then
+		:
+	else
+		core_uses core ${global_ourName}.program
+	fi
+	core_executeProgram "$@"
 }

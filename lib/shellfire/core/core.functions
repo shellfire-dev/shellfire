@@ -19,10 +19,8 @@ core_functions_register core_functions \
 	core_commandLine_parse \
 	core_dependency_installDependencies
 
-core_uses "$global_ourName"
-
-_core_executeProgram()
+core_executeProgram()
 {
 	core_functions_execute core_functions "$@"
+	_program
 }
-_core_executeProgram
