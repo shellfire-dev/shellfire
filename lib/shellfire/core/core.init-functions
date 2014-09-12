@@ -44,3 +44,40 @@ core_exitError()
 	core_message FAIL "$1"
 	exit 1
 }
+
+_core_usesAlreadySourced=''
+core_uses()
+{
+	local namespacedModules
+	local alreadySourcedNamespacedFunctions
+	local moduleName
+	local relativeFunctionsFileName
+	local functionsFilePath
+	local sourced
+	for namespacedModule in "$@"
+	do
+		# skip if already sourced
+		# Does not handle spaces in filenames, unfortunately
+		for alreadySourcedNamespacedFunction in $_core_usesAlreadySourced
+		do
+			if [ "$namespacedModule" = "$alreadySourcedNamespacedFunction" ]; then
+				continue 2
+			fi
+		done
+		
+		_core_usesAlreadySourced="$_core_usesAlreadySourced $namespacedModule"
+		moduleName="$(core_compatibility_basename "$namespacedModule")"
+		sourced=0
+		for relativeFunctionsFilePath in "$namespacedModule"."$global_preferredShell" "$namespacedModule" "$namespacedModule"/"$moduleName"."$global_preferredShell" "$namespacedModule"/"$moduleName"
+		done
+			functionsFilePath="$core_init_functionsPath"/"$core_libraryName"/"$relativeFunctionsFilePath".functions
+			if [ -f "$functionsFilePath" ]; then
+				. "$functionsFilePath" || core_exitError "Can not load functions '$functionsFilePath'"
+				sourced=1
+			fi
+		done
+		if [ $sourced -eq 0 ]; then
+			core_exitError "Can not load functions for namespace '$namespacedModule'"
+		fi
+	done
+}

@@ -1,5 +1,3 @@
-
-#@SHELLFIRE_INIT_BEGIN@#
 core_compatibility_basename()
 {
 	printf '%s' "${1##*/}"
@@ -25,4 +23,3 @@ core_compatibility_whichNoOutput()
 {
 	core_compatibility_which "$1" 1>/dev/null 2>/dev/null
 }
-#@SHELLFIRE_INIT_END@#

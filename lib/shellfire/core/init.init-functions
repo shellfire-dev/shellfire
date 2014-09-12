@@ -1,4 +1,3 @@
-#@SHELLFIRE_INIT_BEGIN@#
 core_init_init()
 {
 	set -e
@@ -200,18 +199,6 @@ core_init_rexecUnderCorrectShell()
 	core_init_shell_rexecing=$$ exec "$shellPath" "$global_ourSymlinkExecutablePath" "$@"
 }
 
-# goal is to create three forms of executable
-# * one that is completely standalone, including paths files [but can still make use of overrides]
-# * one that is completely standalone, excluding paths files and with functions in /lib
-#   * possible variant that shares functions? ?why? creates unnecesary version tensions, requires ABI compat, etc - a bit like shared libraries today
-#   * if not the above, then core_init_functionsPath
-# * one that can run from checkout of git & git submodules
-
-# paths files are composable
-# * work simply by combining those defined in shellfire with local choices
-# * allow local, git friendly, replacements OR additions
-
-# first two forms are going to require a kind of build process
 core_init_main()
 {
 	core_init_init
@@ -221,12 +208,6 @@ core_init_main()
 	core_init_determinePreferredShell
 	core_init_rexecUnderCorrectShell "$@"
 	
-	# Risky but should work
-	
-	xxxx core_init_functionsPath is still being used in core_use()
-	
-	. "$global_ourPath"/lib/core/core.functions
+	# relies on core_init_functionsPath
+	core_uses core
 }
-
-core_init_main "$@"
-#@SHELLFIRE_INIT_END@#
