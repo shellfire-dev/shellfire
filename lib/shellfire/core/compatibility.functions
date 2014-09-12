@@ -1,3 +1,5 @@
+core_usesIn core functions
+
 core_compatibility_dirname()
 {
 	local converted="${1%/*}"
