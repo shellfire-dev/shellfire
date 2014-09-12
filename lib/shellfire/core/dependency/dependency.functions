@@ -74,6 +74,7 @@ core_dependency_determineOsFamily()
 }
 core_functions_register core_dependency_functions core_dependency_determineOsFamily
 
+# We need to think about bash 3.1, 3.2, 4.1 and 4.2 support; supporting Mac OS X and msys out-of-the-box is advantageous
 core_dependency_ensureWeAreRunningBash4()
 {
 	if [ "$global_preferredShell" = 'bash' ]; then
@@ -86,9 +87,11 @@ core_dependency_ensureWeAreRunningBash4()
 					errorMessage="${errorMessage}. MinGW, git-bash (msysGit / Git for Windows https://msysgit.github.io/) and other MSYS based Windows products ship an obsolete version of bash (which could be upgraded according to this thread http://mingw.5.n7.nabble.com/bash-4-x-for-MSYS-td5605.html). Please use Cygwin instead"
 				;;
 				
-			if [ "$core_dependency_osFamily" = 'macosx' ]; then
-				errorMessage="${errorMessage}. On Mac OS X, install Homebrew (see http://brew.sh/ ) and then  brew install bash ."
-			fi
+				macosx)
+					errorMessage="${errorMessage}. On Mac OS X, install Homebrew (see http://brew.sh/ ) and then  brew install bash ."
+				;;
+				
+			esac
 			core_exitError "$errorMessage"
 		fi
 		if [ "${BASH_VERSINFO[1]}" -lt 2 ]; then
