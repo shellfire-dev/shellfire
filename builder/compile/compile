@@ -15,7 +15,7 @@ set -u
 # * work simply by combining those defined in shellfire with local choices
 # * allow local, git friendly, replacements OR additions
 
-compile_deduceRepositoryFolerPath()
+compile_deduceRepositoryFolderPath()
 {
 	if [ "${TRAVIS_BUILD_DIR+set}" = 'set' ]; then
 		readonly compile_repositoryFolderPath="$TRAVIS_BUILD_DIR"
@@ -53,9 +53,10 @@ compile_sourceInitFunctions()
 	_compile_sourceInitFunctionsRecursively "$libraryFunctionsFolderPath"
 }
 
-compile_deduceRepositoryFolerPath
-core_init_functionsPath="$compile_repositoryFolderPath"/lib
+compile_deduceRepositoryFolderPath
+# configuration can obviously set a core_init_functionsPath, so perhaps we should default it if not set?
 core_init_configurationPath="$compile_repositoryFolderPath"/etc
+core_init_functionsPath="$compile_repositoryFolderPath"/lib
 compile_sourceInitFunctions
 core_init_main "$@"
 

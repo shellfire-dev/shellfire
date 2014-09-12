@@ -199,6 +199,7 @@ core_init_rexecUnderCorrectShell()
 	core_init_shell_rexecing=$$ exec "$shellPath" "$global_ourSymlinkExecutablePath" "$@"
 }
 
+# Could we pass shell type, min-max versions here, eg core_init_main bash 4 2 "$@"
 core_init_main()
 {
 	core_init_init
