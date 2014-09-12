@@ -5,7 +5,7 @@ core_functions_register()
 	local functionsVariableName="$1"
 	shift 1
 	
-	core_compatibility_setVariableIfUnset "${functionsVariableName}"
+	core_compatibility_setVariableIfUnset "${functionsVariableName}" ''
 	
 	core_compatibility_setVariable core_functions "$(core_compatibility_indirectVariableValue ${functionsVariableName}) $@"
 }
