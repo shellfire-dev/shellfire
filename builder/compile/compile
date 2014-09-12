@@ -55,6 +55,7 @@ compile_sourceInitFunctions()
 
 compile_deduceRepositoryFolerPath
 core_init_functionsPath="$compile_repositoryFolderPath"/lib
+core_init_configurationPath="$compile_repositoryFolderPath"/etc
 compile_sourceInitFunctions
 core_init_main "$@"
 

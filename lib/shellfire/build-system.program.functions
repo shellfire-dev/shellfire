@@ -1,13 +1,21 @@
-# Might be needed in help text
-_program_default_build_sourcePath="$global_ourSymlinkPath"/source
-_program_default_build_outputPath="$global_ourSymlinkPath"/output
+_program_commandLine_parseInitialise()
+{
+	_program_commandLine_getoptsStringExtra=''
+	
+	# Might be needed in help text
+	_program_default_build_sourcePath="$global_ourSymlinkPath"/source
+	_program_default_build_outputPath="$global_ourSymlinkPath"/output
+}
 
-_program_commandLine_helpMessage_description="Builds projects using CMake"
-_program_commandLine_helpMessage_optionsAndNonOptions=" -- [build_projects...]"
-_program_commandLine_helpMessage_usageMessage="Build projects"
-_program_commandLine_helpMessage_argumentedOptions=""
-_program_commandLine_helpMessage_argumentlessOptions=""
-_program_commandLine_helpMessage_nonOptionArguments="build_projects is a list of projects to build"
+_program_commandLine_helpMessage()
+{
+	_program_commandLine_helpMessage_description="Builds projects using CMake"
+	_program_commandLine_helpMessage_optionsAndNonOptions=" -- [build_projects...]"
+	_program_commandLine_helpMessage_usageMessage="Build projects"
+	_program_commandLine_helpMessage_argumentedOptions=""
+	_program_commandLine_helpMessage_argumentlessOptions=""
+	_program_commandLine_helpMessage_nonOptionArguments="build_projects is a list of projects to build"
+}
 
 _program_commandLine_handleShortOption()
 {

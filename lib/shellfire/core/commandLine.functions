@@ -1,5 +1,7 @@
 core_commandLine_helpMessage()
 {
+	_program_commandLine_helpMessage
+	
 	printf '%s' "${global_ourName}
 $_program_commandLine_helpMessage_description
 
@@ -112,8 +114,9 @@ core_commandLine_parse_longOptionUnknown()
 
 core_commandLine_parse()
 {
-	local getoptsStringExtra="$1"
-	local getoptsString=":hv-:${getoptsStringExtra}"
+	_program_commandLine_parseInitialise
+	
+	local getoptsString=":hv-:${_program_commandLine_getoptsStringExtra}"
 
 	local OPTERR=1
 	local OPTIND=1

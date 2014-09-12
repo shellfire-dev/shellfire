@@ -63,7 +63,7 @@ core_configuration_callbackLoadFolder()
 core_configuration_defaultsBlacklistedEnvironmentVariables=''
 core_configuration_load()
 {	
-	core_TODO Security checks to be done for any '/etc' files
+	core_TODO Security checks to be done for any "${core_init_configurationPath}" / '/etc' files
 	# * They are not owned by root.
 	# * They are not group writable.
 	# * They are not world writable.
@@ -73,14 +73,14 @@ core_configuration_load()
 	# Some of these needs can be accompolished by parsing  ls -a -l -L -n "$folderPath" | while IFS=' ' read -r permissions uid gid size month day file
 	# Other might be best done by feature-checking stat (look at the lines of output)
 	
-	core_TODO Need to make sure we dont load config files more than once
+	core_TODO Need to make sure we do not load config files more than once
 	# This is problematic if they contain spaces - could we use an eval?
 	
-	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFile "${core_init_rootPath}"/etc/"${core_libraryName}"rc
-	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFolder "${core_init_rootPath}"/etc/"${core_libraryName}"rc.d
+	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFile "${core_init_configurationPath}"/"${core_libraryName}"rc
+	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFolder "${core_init_configurationPath}"/"${core_libraryName}"rc.d
 	
-	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFile "${core_init_rootPath}"/etc/"${global_ourName}"rc
-	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFolder "${core_init_rootPath}"/etc/"${global_ourName}"rc.d
+	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFile "${core_init_configurationPath}"/"${global_ourName}"rc
+	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFolder "${core_init_configurationPath}"/"${global_ourName}"rc.d
 	
 	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFile HOME /."${core_libraryName}"rc
 	core_configuration_ifPathIsExtantCallCallback core_configuration_callbackLoadFolder HOME /."${core_libraryName}"rc.d
@@ -98,10 +98,42 @@ core_configuration_load()
 core_usesIn core compatibility
 core_configuration_defaults()
 {
-	# /opt/<package-name>, /bin, /usr/bin, /usr/local/bin, $HOME/bin installation locations? /sbin et al, too?
+	# Option 1: We are in /bin [or sbin]
+	# * core_init_configurationPath=/etc
+	# * core_init_functionsPath=/lib
+	
+	# Option 2: We are in /usr/bin [or sbin]
+	# * core_init_configurationPath=/etc [unless /usr/etc exists]
+	# * core_init_functionsPath=/usr/lib
+	
+	# Option 3: We are in /usr/local/bin [or sbin]
+	# * core_init_configurationPath=/usr/local/etc
+	# * core_init_functionsPath=/usr/local/lib
+	
+	# Option 4: We are in /opt/package[-version]/bin or some subfolder
+	# * resolve relative to location, ie go up one and down one
+	# * this also works for installs in $HOME [see 5 below], and for Option 8, as long as we realise there's no /usr/etc
+	
+	# Option 5: We are in $HOME/bin [sbin]
+	# * core_init_configurationPath=/etc
+	# * core_init_functionsPath=/lib
+	
+	# Option 7: We are in $HOME/usr/bin [sbin]
+	# * core_init_configurationPath=/etc
+	# * core_init_functionsPath=/usr/lib
+	
+	# Option 8: We are in a debian package layout
+	# check if we're in a xxx/bin, a xxx/usr/bin, a xxx/usr/local/bin, a xx/opt, then apply rules for Options 1 - 4
+	
+	# Option 9: We are in a git repository
+	# * detect the presence of .git by going up parent folders - we'll either hit the root or a submodule
+	# * hmmmm
+	
+	# Option 9a: we are the main bash script in a repository - we expect to have our functions file parallel to us, and shellfire modules in lib/shellfire
+	# Option 9b: we are not, eg in the case of a build script for java2c.
 	
 	# A more sophisticated scheme would use locale -a and hunt for an UTF-8 locale, but language needs to be stable over multiple invocations if data is persistent
-	# Can also be 'en_GB.UTF-8' or 'C' (but that's not unicode aware)
+	# Can also be 'en_GB.UTF-8' or 'C' (but that's not unicode aware) or ?C.UTF-8?
 	core_compatibility_setVariableIfUnset core_init_language 'en_US.UTF-8'
 	core_compatibility_setVariableIfUnset core_init_verbosity 0
 }
