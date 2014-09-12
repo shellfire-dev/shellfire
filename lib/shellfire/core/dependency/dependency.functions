@@ -102,7 +102,7 @@ core_dependency_ensureWeAreRunningBash4()
 			# Cygwin using 4.1
 			# Mac OS X using 3.2 (still)
 			# MinGW uses 3.1 (!)
-			core_exitError "You are not using at least bash 4.2 (Feb 2011; of major Linux distros still supported, only RHEL 6 / CentOS 6 still has bash 4.1)?"
+			core_exitError "You are not using at least bash 4.2"
 		fi
 	fi
 }

@@ -130,9 +130,9 @@ core_init_setTracing()
 		
 		*x*)
 			if core_compatibility_testVariableIsSet shellfire_trace; then
-				export shellfire_trace="$global_ourSymlinkName"
-			else
 				export shellfire_trace="$shellfire_trace $global_ourSymlinkName"
+			else
+				export shellfire_trace="$global_ourSymlinkName"
 			fi
 		;;
 		
