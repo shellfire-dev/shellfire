@@ -44,14 +44,7 @@ core_compatibility_setVariableIfUnset()
 core_compatibility_testVariableIsUnset()
 {
 	local variableName="$1"
-
-	# There seems to be a bug in bash 4.3 that causes this eval expansion (and the non-eval'd version of it) to fail when set -u is set
-	# This has been found when calling core_init_setTracing after running the script with bash -x scriptName
-	set +u
 	eval "[ \"\${$variableName+unset}\" != 'unset' ]"
-	local exitCode=$?
-	set -u
-	return $exitCode
 }
 
 # dash by default escapes backslashes, other echos behave differently. This way is defensive.
