@@ -1,4 +1,4 @@
-core_uses_in core compatibility
+core_usesIn core compatibility
 
 core_functions_register()
 {
