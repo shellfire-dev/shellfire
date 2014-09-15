@@ -1,6 +1,4 @@
 #!/usr/bin/env sh
-set -e
-set -u
 
 # TODO: core_uses and core_functions_register are 'special' functions that a simple sourcing compiler writes stubs for
 
@@ -15,34 +13,15 @@ set -u
 # * work simply by combining those defined in shellfire with local choices
 # * allow local, git friendly, replacements OR additions
 
-compile_deduceRepositoryFolderPath()
-{
-	if [ "${TRAVIS_BUILD_DIR+set}" = 'set' ]; then
-		readonly compile_repositoryFolderPath="$TRAVIS_BUILD_DIR"
-	else
-		# We could enforce a standard, like $HOME/Documents/<repo>
-		# We could try to resolve $0; we start to copy much of our compatibility logic...
-		readonly compile_repositoryFolderPath="$(pwd)"
-	fi
-	# TRAVIS_COMMIT='ab8186e73e9676d2c547f07b309499ebeed27ec0'
-}
-
-_compile_sourceInitFunctionsRecursively()
-{
-	local parentPath="$1"
-	
-	local fileOrFolder
-	for fileOrFolder in "$1"/*
-	do
-		if [ -d "$fileOrFolder" ]; then
-			_compile_sourceInitFunctionsRecursively "$fileOrFolder"
-		elif [ -f "$fileOrFolder" ]; then
-			if [ "${fileOrFolder##*.}" = 'init-functions' ]; then
-				. "$fileOrFolder"
-			fi
-		fi
-	done
-}
+#compile_deduceRepositoryFolderPath()
+#{
+#	if [ "${TRAVIS_BUILD_DIR+set}" = 'set' ]; then
+#		readonly compile_repositoryFolderPath="$TRAVIS_BUILD_DIR"
+#	else
+#		readonly compile_repositoryFolderPath="$(pwd)"
+#	fi
+#	# TRAVIS_COMMIT='ab8186e73e9676d2c547f07b309499ebeed27ec0'
+#}
 
 compile_sourceInitFunctions()
 {
@@ -53,12 +32,149 @@ compile_sourceInitFunctions()
 	_compile_sourceInitFunctionsRecursively "$libraryFunctionsFolderPath"
 }
 
-compile_deduceRepositoryFolderPath
-# configuration can obviously set a core_init_functionsPath, so perhaps we should default it if not set?
-core_init_configurationPath="$compile_repositoryFolderPath"/etc
-core_init_functionsPath="$compile_repositoryFolderPath"/lib
-compile_sourceInitFunctions
-core_init_main "$@"
+ --target "$project" --clean-first --use-stderr -- --jobs "$cpucount_makeJobs" --load-average "$cpucount_makeLoadAverage"
+	done
+}
+
+_program()
+{
+	echo "hello"
+}
+
+readonly _program_name='shellfire-fatten'
+readonly _program_version='unversioned'
+readonly _program_package_or_build=''
+readonly _program_copyright='(C) 2014 Raphael Cohn'
+readonly _program_licence='MIT'
+readonly _program_written_by='Raphael Cohn'
+readonly _program_path="$([ "${0%/*}" = "${0}" ] && printf '%s\n' '.' || printf '%s\n' "${0%/*}")"
+readonly _program_lib_path="${_program_path}/../../lib"
+readonly _program_etc_path="${_program_path}/../../etc"
+readonly _program_uses='compile'
+
+_program_commandLine_parseInitialise()
+{
+	# Needed in help text
+	_program_default_etc_path='/etc'
+	_program_default_lib_path='/usr/lib'
+}
+
+_program_commandLine_helpMessage()
+{
+	_program_commandLine_helpMessage_usage="[OPTION]... -- [PROGRAMS]..."
+	_program_commandLine_helpMessage_description="Builds projects using CMake."
+	_program_commandLine_helpMessage_options="
+-r, --repository-path PATH  Path to folder containing a PROGRAM
+-e, --etc-path PATH  Path to install fir etc folder [Default ${_program_default_etc_path}]
+-l, --lib-path PATH  Path to lib folder [Default ${_program_default_lib_path}]
+"
+	_program_commandLine_helpMessage_configurationKeys=$'\n'
+	_program_commandLine_helpMessage_examples="
+  ${global_ourName} -r git-repo/bin -- cmake-scripted
+"
+}
+
+_program_commandLine_optionExists()
+{
+	case "$optionName" in
+		
+		r|repository-path)
+			echo 'yes-argumented'
+		;;
+		
+		e|etc-path)
+			echo 'yes-argumented'
+		;;
+		
+		l|lib-path)
+			echo 'yes-argumented'
+		;;
+		
+		*)
+			echo 'no'
+		;;
+		
+	esac
+}
+
+_program_commandLine_processOptionWithoutArgument()
+{
+	# optionName
+	:
+}
+
+_program_commandLine_processOptionWithArgument()
+{
+	case "$optionName" in
+		
+		r|repository-path)
+			core_validate_folderPathReadableAndSearchable 'option' "$optionNameIncludingHyphens" "$optionValue"
+			shellfire_fatten_repository_path="$optionValue"
+		;;
+		
+		e|etc-path)
+			core_validate_pathNotEmpty 'option' "$optionNameIncludingHyphens" "$optionValue"
+			shellfire_fatten_etc_path="$optionValue"
+		;;
+		
+		l|lib-path)
+			core_validate_pathNotEmpty 'option' "$optionNameIncludingHyphens" "$optionValue"
+			shellfire_fatten_lib_path="$optionValue"
+		;;
+		
+		*)
+			echo 'no'
+		;;
+		
+	esac
+	
+	# optionName optionValue
+	:
+}
+
+_program_commandLine_handleNonOptions()
+{
+	if [ $# -eq 0 ]; then
+		core_exitError "No programs specified"
+	fi
+	
+	# TODO: Not sh friendly, and objects violently if dash as a syntax error!
+	# Problem is we want to preserve in an array if using bash 4...
+	
+	xxxx: initialise varargs
+	#cmake_scripted_projects=("$@")
+}
+
+_program_commandLine_validate()
+{
+	local optionNameIncludingHyphens
+	local optionValue
+	
+	if core_compatibility_testVariableIsUnset shellfire_fatten_repository_path; then
+		core_exitError "The option '${optionNameIncludingHyphens}' must be specified"
+	else
+		core_validate_folderPathReadableAndSearchable 'configuration setting' 'shellfire_fatten_repository-path' "$shellfire_fatten_repository_path"
+	fi
+	
+	if core_compatibility_testVariableIsUnset shellfire_fatten_etc_path
+		shellfire_fatten_etc_path="$_program_default_etc_path"
+	else
+		core_validate_pathNotEmpty 'configuration setting' 'shellfire_fatten_etc_path' "$shellfire_fatten_etc_path"
+	fi
+	
+	if core_compatibility_testVariableIsUnset shellfire_fatten_lib_path
+		shellfire_fatten_etc_path="$_program_default_lib_path"
+	else
+		core_validate_pathNotEmpty 'configuration setting' 'shellfire_fatten_lib_path' "$shellfire_fatten_lib_path"
+	fi
+}
+
+# Assumes pwd, and so requires this code to be running from this folder
+. "$_program_lib_path"/shellfire/core/init.functions "$@"
+
+
+
+
 
 # add a shebang line
 # copy all .init-functions files into a file
