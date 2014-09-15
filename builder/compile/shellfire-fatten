@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 # TODO: core_uses and core_functions_register are 'special' functions that a simple sourcing compiler writes stubs for
 
