@@ -139,7 +139,8 @@ _program_commandLine_handleNonOptions()
 	fi
 	
 	# TODO: Not sh friendly, and objects violently if dash as a syntax error!
-	# Problem is we want to preserve in an array if using bash 4...
+	# Problem is we want to preserve in an array if using bash 3...
+	# bash 3 does support array initialisers
 	
 	xxxx: initialise varargs
 	#cmake_scripted_projects=("$@")
