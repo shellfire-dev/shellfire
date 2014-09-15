@@ -139,7 +139,7 @@ _program_commandLine_validate()
 	local optionValue
 	
 	if core_compatibility_testVariableIsUnset shellfire_fatten_repository_path; then
-		core_exitError "The option '${optionNameIncludingHyphens}' must be specified"
+		core_exitError "The option '--repository-path' must be specified"
 	else
 		core_validate_folderPathReadableAndSearchable 'configuration setting' 'shellfire_fatten_repository_path' "$shellfire_fatten_repository_path"
 	fi
