@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 # TODO: core_uses and core_functions_register are 'special' functions that a simple sourcing compiler writes stubs for
 
@@ -23,19 +23,6 @@
 #	# TRAVIS_COMMIT='ab8186e73e9676d2c547f07b309499ebeed27ec0'
 #}
 
-compile_sourceInitFunctions()
-{
-	local libraryFunctionsFolderPath="$core_init_functionsPath"/shellfire
-	if [ ! -d "$libraryFunctionsFolderPath" ]; then
-		printf '%s\n' "Can not find '$libraryFunctionsFolderPath' - did you run this script from the root of the repository?"
-	fi
-	_compile_sourceInitFunctionsRecursively "$libraryFunctionsFolderPath"
-}
-
- --target "$project" --clean-first --use-stderr -- --jobs "$cpucount_makeJobs" --load-average "$cpucount_makeLoadAverage"
-	done
-}
-
 _program()
 {
 	echo "hello"
@@ -48,9 +35,9 @@ readonly _program_copyright='(C) 2014 Raphael Cohn'
 readonly _program_licence='MIT'
 readonly _program_written_by='Raphael Cohn'
 readonly _program_path="$([ "${0%/*}" = "${0}" ] && printf '%s\n' '.' || printf '%s\n' "${0%/*}")"
-readonly _program_lib_path="${_program_path}/../../lib"
-readonly _program_etc_path="${_program_path}/../../etc"
-readonly _program_uses='compile'
+readonly _program_libPath="${_program_path}/../../lib"
+readonly _program_etcPath="${_program_path}/../../etc"
+readonly _program_uses=''
 
 _program_commandLine_parseInitialise()
 {
@@ -64,11 +51,15 @@ _program_commandLine_helpMessage()
 	_program_commandLine_helpMessage_usage="[OPTION]... -- [PROGRAMS]..."
 	_program_commandLine_helpMessage_description="Builds projects using CMake."
 	_program_commandLine_helpMessage_options="
--r, --repository-path PATH  Path to folder containing a PROGRAM
--e, --etc-path PATH  Path to install fir etc folder [Default ${_program_default_etc_path}]
--l, --lib-path PATH  Path to lib folder [Default ${_program_default_lib_path}]
+  -r, --repository-path PATH  Path to folder containing a PROGRAM
+  -e, --etc-path PATH         Path to install fir etc folder [Default ${_program_default_etc_path}]
+  -l, --lib-path PATH         Path to lib folder [Default ${_program_default_lib_path}]"
+    _program_commandLine_helpMessage_optionsSpacing='     '
+	_program_commandLine_helpMessage_configurationKeys="
+  shellfire_fatten_etc_path  Equivalent to --etc-path
+  shellfire_fatten_lib_path  Equivalent to --lib-path
+  shellfire_fatten_repository_path  Equivalent to --repository-path
 "
-	_program_commandLine_helpMessage_configurationKeys=$'\n'
 	_program_commandLine_helpMessage_examples="
   ${global_ourName} -r git-repo/bin -- cmake-scripted
 "
@@ -127,9 +118,6 @@ _program_commandLine_processOptionWithArgument()
 		;;
 		
 	esac
-	
-	# optionName optionValue
-	:
 }
 
 _program_commandLine_handleNonOptions()
@@ -138,12 +126,11 @@ _program_commandLine_handleNonOptions()
 		core_exitError "No programs specified"
 	fi
 	
-	# TODO: Not sh friendly, and objects violently if dash as a syntax error!
+	core_TODO Not sh friendly, and objects violently if dash as a syntax error!
 	# Problem is we want to preserve in an array if using bash 3...
 	# bash 3 does support array initialisers
 	
-	xxxx: initialise varargs
-	#cmake_scripted_projects=("$@")
+	shellfire_fatten_programs=("$@")
 }
 
 _program_commandLine_validate()
@@ -154,16 +141,16 @@ _program_commandLine_validate()
 	if core_compatibility_testVariableIsUnset shellfire_fatten_repository_path; then
 		core_exitError "The option '${optionNameIncludingHyphens}' must be specified"
 	else
-		core_validate_folderPathReadableAndSearchable 'configuration setting' 'shellfire_fatten_repository-path' "$shellfire_fatten_repository_path"
+		core_validate_folderPathReadableAndSearchable 'configuration setting' 'shellfire_fatten_repository_path' "$shellfire_fatten_repository_path"
 	fi
 	
-	if core_compatibility_testVariableIsUnset shellfire_fatten_etc_path
+	if core_compatibility_testVariableIsUnset shellfire_fatten_etc_path; then
 		shellfire_fatten_etc_path="$_program_default_etc_path"
 	else
 		core_validate_pathNotEmpty 'configuration setting' 'shellfire_fatten_etc_path' "$shellfire_fatten_etc_path"
 	fi
 	
-	if core_compatibility_testVariableIsUnset shellfire_fatten_lib_path
+	if core_compatibility_testVariableIsUnset shellfire_fatten_lib_path; then
 		shellfire_fatten_etc_path="$_program_default_lib_path"
 	else
 		core_validate_pathNotEmpty 'configuration setting' 'shellfire_fatten_lib_path' "$shellfire_fatten_lib_path"
@@ -171,7 +158,7 @@ _program_commandLine_validate()
 }
 
 # Assumes pwd, and so requires this code to be running from this folder
-. "$_program_lib_path"/shellfire/core/init.functions "$@"
+. "$_program_libPath"/shellfire/core/init.functions "$@"
 
 
 
