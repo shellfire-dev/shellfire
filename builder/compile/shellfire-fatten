@@ -70,7 +70,7 @@ _program()
 	}
 	
 	# We're supposed to use git's "low-level plumbing" and avoid 'porcelain' commands. Given how hideous git's syntax is, life is too short. We'll fix the bugs that arise instead.
-	core_dependency_requires '*' git date awk sort
+	core_dependency_requires '*' git date awk sort md5sum
 	shellfire_fatten_obtainGitDetails()
 	{
 		pushd "$shellfire_fatten_repositoryPath"
@@ -78,17 +78,23 @@ _program()
 			if [ ! -d '.git' ]; then
 				core_exitError "--repository-path '$shellfire_fatten_repositoryPath' is not a git repository"
 			fi
-		
-			local pendingChanges="$(git diff --minimal --no-color --name-status)"
-			if [ -n "$pendingChanges" ]; then
-				core_exitError $core_commandLine_exitCode_DATAERR "Pending changes in --repository-path '$shellfire_fatten_repositoryPath'"
-			fi
-			
-			local iso8601Date="$(git log -n 1 --format='%ci')"
-			shellfire_fatten_version="$(date -d "$iso8601Date" '+%Y.%m.%d.%H.%M')"
+
 			shellfire_fatten_branch="$(git branch | awk '/^\*/ {print $2}')"
 			shellfire_fatten_commit="$(git log -n 1 --format='%H')"
 			shellfire_fatten_authors="$(git log --format='%aN' | sort -u | awk 'NR==1 {ORS=""; print $0}; NR>1 {ORS=""; print ", " $0}')"
+			local iso8601Date="$(git log -n 1 --format='%ci')"
+			shellfire_fatten_version="$(date -d "$iso8601Date" '+%Y.%m.%d.%H.%M')"
+			shellfire_fatten_programPath=''
+			
+			if [ "$shellfire_fatten_force" = 'no' ]; then
+				local pendingChanges="$(git diff --minimal --no-color --name-status)"
+				if [ -n "$pendingChanges" ]; then
+					core_exitError $core_commandLine_exitCode_DATAERR "Pending changes in --repository-path '$shellfire_fatten_repositoryPath'"
+				fi
+				shellfire_fatten_packageOrBuild="$shellfire_fatten_branch $shellfire_fatten_commit $(git diff --minimal --no-color | md5sum | awk '{print $1}')"
+			else
+				shellfire_fatten_packageOrBuild="$shellfire_fatten_branch $shellfire_fatten_commit "
+			fi
 			
 		popd
 	}
@@ -128,9 +134,10 @@ _program()
 		chmod +x "$shellfire_fatten_bootstrapProgram"
 		
 		cat "$shellfire_fatten_originalProgram" \
+			| _shellfire_fatten_replaceProgramReadonlyValue _program_name "$shellfire_fatten_programName" \
 			| _shellfire_fatten_replaceProgramReadonlyValue _program_version "$shellfire_fatten_version" \
-			| _shellfire_fatten_replaceProgramReadonlyValue _program_package_or_build "$shellfire_fatten_branch $shellfire_fatten_commit" \
-			| _shellfire_fatten_replaceProgramReadonlyValue _program_path '' \
+			| _shellfire_fatten_replaceProgramReadonlyValue _program_package_or_build "$shellfire_fatten_packageOrBuild" \
+			| _shellfire_fatten_replaceProgramReadonlyValue _program_path "$shellfire_fatten_programPath" \
 			| _shellfire_fatten_replaceProgramReadonlyValue _program_libPath "$shellfire_fatten_libPath" \
 			| _shellfire_fatten_replaceProgramReadonlyValue _program_etcPath "$shellfire_fatten_etcPath" \
 			| _shellfire_fatten_removeInitFunctionsSourcing
@@ -157,6 +164,9 @@ readonly _program_etcPath="${_program_path}/../../etc"
 readonly _program_uses='core/variable/array'
 readonly _program_entrypoint='shellfire_fatten'
 
+echo $_program_path
+exit 50
+
 _program_commandLine_parseInitialise()
 {
 	# Needed in help text
@@ -171,7 +181,8 @@ _program_commandLine_helpMessage()
 	_program_commandLine_helpMessage_options="
   -r, --repository-path PATH  Path to folder containing a PROGRAM
   -e, --etc-path PATH         Path to install fir etc folder [Default ${_program_default_etc_path}]
-  -l, --lib-path PATH         Path to lib folder [Default ${_program_default_lib_path}]"
+  -l, --lib-path PATH         Path to lib folder [Default ${_program_default_lib_path}]
+  -f, --force                 Force fattening even if there are uncommited changes"
     _program_commandLine_helpMessage_optionsSpacing='     '
 	_program_commandLine_helpMessage_configurationKeys="
   shellfire_fatten_etc_path  Equivalent to --etc-path
@@ -179,7 +190,7 @@ _program_commandLine_helpMessage()
   shellfire_fatten_repository_path  Equivalent to --repository-path
 "
 	_program_commandLine_helpMessage_examples="
-  ${global_ourName} -r git-repo/bin -- cmake-scripted
+  ${_program_name} -r git-repo/bin -- cmake-scripted
 "
 }
 
@@ -195,6 +206,10 @@ _program_commandLine_optionExists()
 			echo 'yes-argumented'
 		;;
 		
+		f|force)
+			echo 'yes-argumentless'
+		;;
+		
 		l|lib-path)
 			echo 'yes-argumented'
 		;;
@@ -208,8 +223,13 @@ _program_commandLine_optionExists()
 
 _program_commandLine_processOptionWithoutArgument()
 {
-	# optionName
-	:
+	case "$optionName" in
+		
+		f|force)
+			shellfire_fatten_force='yes'
+		;;
+		
+	esac
 }
 
 _program_commandLine_processOptionWithArgument()
@@ -256,6 +276,12 @@ _program_commandLine_validate()
 {
 	local optionNameIncludingHyphens
 	local optionValue
+	
+	if core_variable_isUnset shellfire_fatten_force; then
+		shellfire_fatten_force='no'
+	else
+		core_validate_yesOrNo $core_commandLine_exitCode_CONFIG 'configuration setting' 'shellfire_fatten_force' "$shellfire_fatten_force"
+	fi
 	
 	if core_variable_isUnset shellfire_fatten_repositoryPath; then
 		core_exitError $core_commandLine_exitCode_USAGE "The option '--repository-path (-r)' must be specified"
