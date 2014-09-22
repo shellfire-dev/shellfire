@@ -164,9 +164,6 @@ readonly _program_etcPath="${_program_path}/../../etc"
 readonly _program_uses='core/variable/array'
 readonly _program_entrypoint='shellfire_fatten'
 
-echo $_program_path
-exit 50
-
 _program_commandLine_parseInitialise()
 {
 	# Needed in help text
