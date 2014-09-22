@@ -168,6 +168,7 @@ _program()
 				declare -p "$_program_fattening_declaredName"
 			done
 			
+			_program_fattening_declaredDependencyNames=''
 			# Dependencies
 			while IFS="$core_variable_array_delimiter" read -r packageManager programName
 			do
@@ -186,11 +187,22 @@ _program()
 				do	
 					for externalDataSourceFolderName in "$_program_name" "$core_libraryName"
 					do
-						externalDataSourceFilePath="$_program_etcPath"/"$externalDataSourceFolderName"/"$packageManager"/"$programName".path
+						externalDataSourceFilePath="$_program_etcPath"/"$externalDataSourceFolderName"/paths.d/"$packageManager"/"$programName".path
 						if core_path_isReadableNonEmptyFilePath "$externalDataSourceFilePath"; then
-							printf '%s' "declare -r _core_dependency_internalDataSource_${packageManager}_${programName}='"
-							printf '%s' "$(head -n 1 "$externalDataSourceFilePath")
+							
+							_program_fattening_declaredDependencyName="_core_dependency_internalDataSource_${packageManager}_${programName}"
+							for existingName in $_program_fattening_declaredDependencyNames
+							do
+								if [ "$existingName" = "$_program_fattening_declaredDependencyName" ]; then
+									break 2
+								fi
+							done
+							
+							printf '%s' "declare -r ${_program_fattening_declaredDependencyName}='"
+							printf '%s' "$(head -n 1 "$externalDataSourceFilePath")"
 							printf '%s\n' "'"
+							
+							_program_fattening_declaredDependencyNames="$_program_fattening_declaredDependencyNames $_program_fattening_declaredDependencyName"
 							break
 						fi
 					done
