@@ -131,8 +131,12 @@ _program()
 				. "$shellfire_fatten_originalProgram"
 			popd - 1>/dev/null
 			
-			# Get rid of the original definition
+			# Get rid of the original definitions
 			core_dependency_declares()
+			{
+				:
+			}
+			_program()
 			{
 				:
 			}
