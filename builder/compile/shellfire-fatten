@@ -78,7 +78,7 @@ _program()
 			if [ ! -d '.git' ]; then
 				core_exitError "--repository-path '$shellfire_fatten_repositoryPath' is not a git repository"
 			fi
-
+			
 			shellfire_fatten_branch="$(git branch | awk '/^\*/ {print $2}')"
 			shellfire_fatten_commit="$(git log -n 1 --format='%H')"
 			shellfire_fatten_authors="$(git log --format='%aN' | sort -u | awk 'NR==1 {ORS=""; print $0}; NR>1 {ORS=""; print ", " $0}')"
@@ -102,6 +102,7 @@ _program()
 	core_dependency_requires '*' cat bash chmod
 	shellfire_fatten_fattenProgram()
 	{
+		set -x
 		local shellfire_fatten_originalProgram="$core_variable_array_element"
 		local shellfire_fatten_programPath="$(core_compatibility_dirname "$shellfire_fatten_originalProgram")"
 		local shellfire_fatten_programName="$(core_compatibility_basename "$shellfire_fatten_originalProgram")"
@@ -132,7 +133,8 @@ _program()
 			declare
 		EOF
 		chmod +x "$shellfire_fatten_bootstrapProgram"
-		
+		set +x
+		exit 50
 		cat "$shellfire_fatten_originalProgram" \
 			| _shellfire_fatten_replaceProgramReadonlyValue _program_name "$shellfire_fatten_programName" \
 			| _shellfire_fatten_replaceProgramReadonlyValue _program_version "$shellfire_fatten_version" \
