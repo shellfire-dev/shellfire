@@ -23,9 +23,126 @@
 #	# TRAVIS_COMMIT='ab8186e73e9676d2c547f07b309499ebeed27ec0'
 #}
 
+# add a shebang line
+# copy all .init-functions files into a file
+# set the variable  core_init_functionsPath
+# if not compiling:-
+#  * add a core_init_functionsPath=XXXX definition [perhaps as $(core_init_computeFunctionsPath)]
+#  * add a core_init_main "$@"
+#  * repeat for sh, dash, bash
+# else:-
+#  * create special  cores_uses  and  core_functions_register  functions
+#  * explicitly call  core_uses core
+#  *  source program code
+#  * add a core_init_functionsPath=XXXX definition
+#  * add a core_init_main "$@"
+
+# we assemble this file, effectively, and so should include a revision_blob or somesuch so we can tell if we're out-of-date
+# if it ends .init-functions, it goes in here. Order only matters for the final line  init_main "$@"  but we could generate that
+# if we're standing alone, then we need to set core_
+# if we're including all functions, then we need to override core_uses
+
+# 0 create empty file somewhere
+# 1 set the 
+# 2 find all .init-functions, and output to new file
+# 3 (optional) output all other functions by overridding core_use
+
 _program()
 {
-	echo "hello"
+	core_dependency_requires '*' sed
+	_shellfire_fatten_replaceProgramReadonlyValue()
+	{
+		local name="$1"
+		local value="$2"
+		sed -e 's,^readonly '"${name}"'=.*$,readonly '"${name}"'='"'${value}'"',g'
+	}
+	
+	_shellfire_fatten_removeInitFunctionsSourcing()
+	{
+		sed -e 's,^. "$_program_libPath"/shellfire/core/init.functions "$@".*,,g'
+	}
+	
+	shellfire_fatten_createTemporaryFolder()
+	{
+		local TMP_FOLDER
+		core_temporaryFiles_newFolderToRemoveOnExit
+		shellfire_fatten_outputFolderPath="$TMP_FOLDER"
+	}
+	
+	# We're supposed to use git's "low-level plumbing" and avoid 'porcelain' commands. Given how hideous git's syntax is, life is too short. We'll fix the bugs that arise instead.
+	core_dependency_requires '*' git date awk sort
+	shellfire_fatten_obtainGitDetails()
+	{
+		pushd "$shellfire_fatten_repositoryPath"
+		
+			if [ ! -d '.git' ]; then
+				core_exitError "--repository-path '$shellfire_fatten_repositoryPath' is not a git repository"
+			fi
+		
+			local pendingChanges="$(git diff --minimal --no-color --name-status)"
+			if [ -n "$pendingChanges" ]; then
+				core_exitError $core_commandLine_exitCode_DATAERR "Pending changes in --repository-path '$shellfire_fatten_repositoryPath'"
+			fi
+			
+			local iso8601Date="$(git log -n 1 --format='%ci')"
+			shellfire_fatten_version="$(date -d "$iso8601Date" '+%Y.%m.%d.%H.%M')"
+			shellfire_fatten_branch="$(git branch | awk '/^\*/ {print $2}')"
+			shellfire_fatten_commit="$(git log -n 1 --format='%H')"
+			shellfire_fatten_authors="$(git log --format='%aN' | sort -u | awk 'NR==1 {ORS=""; print $0}; NR>1 {ORS=""; print ", " $0}')"
+			
+		popd
+	}
+
+	core_dependency_requires '*' cat bash chmod
+	shellfire_fatten_fattenProgram()
+	{
+		local shellfire_fatten_originalProgram="$core_variable_array_element"
+		local shellfire_fatten_programPath="$(core_compatibility_dirname "$shellfire_fatten_originalProgram")"
+		local shellfire_fatten_programName="$(core_compatibility_basename "$shellfire_fatten_originalProgram")"
+		local shellfire_fatten_fattenedProgram="$shellfire_fatten_outputFolderPath"/"$shellfire_fatten_programName"
+		local shellfire_fatten_temporaryProgram="$shellfire_fatten_fattenedProgram".tmp
+		local shellfire_fatten_bootstrapProgram="$shellfire_fatten_fattenedProgram"
+		
+		local shellfire_fatten_version
+		local shellfire_fatten_branch
+		local shellfire_fatten_authors
+		shellfire_fatten_obtainGitDetails
+		
+		# core_init_declares
+		cat >"$shellfire_fatten_bootstrapProgram" <<-'EOF'
+			#!/usr/bin/env bash
+			
+			_program_fattening=1
+			
+			while IFS='=' read -r excludedName excludedValue
+			do
+				printf '%s\n' 1>&2
+			done < <(declare)
+			
+			cd "$shellfire_fatten_programPath" 1>/dev/null
+				. "$shellfire_fatten_originalProgram"
+			cd - 1>/dev/null
+			
+			declare
+		EOF
+		chmod +x "$shellfire_fatten_bootstrapProgram"
+		
+		cat "$shellfire_fatten_originalProgram" \
+			| _shellfire_fatten_replaceProgramReadonlyValue _program_version "$shellfire_fatten_version" \
+			| _shellfire_fatten_replaceProgramReadonlyValue _program_package_or_build "$shellfire_fatten_branch $shellfire_fatten_commit" \
+			| _shellfire_fatten_replaceProgramReadonlyValue _program_path '' \
+			| _shellfire_fatten_replaceProgramReadonlyValue _program_libPath "$shellfire_fatten_libPath" \
+			| _shellfire_fatten_replaceProgramReadonlyValue _program_etcPath "$shellfire_fatten_etcPath" \
+			| _shellfire_fatten_removeInitFunctionsSourcing
+	}
+
+	shellfire_fatten()
+	{
+		local shellfire_fatten_outputFolderPath
+		shellfire_fatten_createTemporaryFolder
+		
+		core_variable_array_iterate shellfire_fatten_programs shellfire_fatten_fattenProgram
+	}
 }
 
 readonly _program_name='shellfire-fatten'
@@ -37,13 +154,14 @@ readonly _program_written_by='Raphael Cohn'
 readonly _program_path="$([ "${0%/*}" = "${0}" ] && printf '%s\n' '.' || printf '%s\n' "${0%/*}")"
 readonly _program_libPath="${_program_path}/../../lib"
 readonly _program_etcPath="${_program_path}/../../etc"
-readonly _program_uses=''
+readonly _program_uses='core/variable/array'
+readonly _program_entrypoint='shellfire_fatten'
 
 _program_commandLine_parseInitialise()
 {
 	# Needed in help text
-	_program_default_etc_path='/etc'
-	_program_default_lib_path='/usr/lib'
+	_program_default_etcPath='/etc'
+	_program_default_libPath='/usr/lib'
 }
 
 _program_commandLine_helpMessage()
@@ -99,18 +217,18 @@ _program_commandLine_processOptionWithArgument()
 	case "$optionName" in
 		
 		r|repository-path)
-			core_validate_folderPathReadableAndSearchable 'option' "$optionNameIncludingHyphens" "$optionValue"
-			shellfire_fatten_repository_path="$optionValue"
+			core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			shellfire_fatten_repositoryPath="$optionValue"
 		;;
 		
 		e|etc-path)
-			core_validate_pathNotEmpty 'option' "$optionNameIncludingHyphens" "$optionValue"
-			shellfire_fatten_etc_path="$optionValue"
+			core_validate_pathNotEmpty $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			shellfire_fatten_etcPath="$optionValue"
 		;;
 		
 		l|lib-path)
-			core_validate_pathNotEmpty 'option' "$optionNameIncludingHyphens" "$optionValue"
-			shellfire_fatten_lib_path="$optionValue"
+			core_validate_pathNotEmpty $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			shellfire_fatten_libPath="$optionValue"
 		;;
 		
 		*)
@@ -123,14 +241,15 @@ _program_commandLine_processOptionWithArgument()
 _program_commandLine_handleNonOptions()
 {
 	if [ $# -eq 0 ]; then
-		core_exitError "No programs specified"
+		core_exitError $core_commandLine_exitCode_USAGE "No programs specified"
 	fi
+	local shellfire_fatten_program
+	for shellfire_fatten_program in "$@"
+	do
+		core_validate_filePathReadableAndExecutableAndNotEmpty $core_commandLine_exitCode_USAGE 'non-options' 'programs' "$shellfire_fatten_program"
+	done
 	
-	core_TODO Not sh friendly, and objects violently if dash as a syntax error!
-	# Problem is we want to preserve in an array if using bash 3...
-	# bash 3 does support array initialisers
-	
-	shellfire_fatten_programs=("$@")
+	core_variable_array_append shellfire_fatten_programs "$@"
 }
 
 _program_commandLine_validate()
@@ -138,53 +257,24 @@ _program_commandLine_validate()
 	local optionNameIncludingHyphens
 	local optionValue
 	
-	if core_compatibility_testVariableIsUnset shellfire_fatten_repository_path; then
-		core_exitError "The option '--repository-path' must be specified"
+	if core_variable_isUnset shellfire_fatten_repositoryPath; then
+		core_exitError $core_commandLine_exitCode_USAGE "The option '--repository-path (-r)' must be specified"
 	else
-		core_validate_folderPathReadableAndSearchable 'configuration setting' 'shellfire_fatten_repository_path' "$shellfire_fatten_repository_path"
+		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'configuration setting' 'shellfire_fatten_repositoryPath' "$shellfire_fatten_repositoryPath"
 	fi
 	
-	if core_compatibility_testVariableIsUnset shellfire_fatten_etc_path; then
-		shellfire_fatten_etc_path="$_program_default_etc_path"
+	if core_variable_isUnset shellfire_fatten_etcPath; then
+		shellfire_fatten_etcPath="$_program_default_etcPath"
 	else
-		core_validate_pathNotEmpty 'configuration setting' 'shellfire_fatten_etc_path' "$shellfire_fatten_etc_path"
+		core_validate_pathNotEmpty $core_commandLine_exitCode_CONFIG 'configuration setting' 'shellfire_fatten_etcPath' "$shellfire_fatten_etcPath"
 	fi
 	
-	if core_compatibility_testVariableIsUnset shellfire_fatten_lib_path; then
-		shellfire_fatten_etc_path="$_program_default_lib_path"
+	if core_variable_isUnset shellfire_fatten_libPath; then
+		shellfire_fatten_libPath="$_program_default_libPath"
 	else
-		core_validate_pathNotEmpty 'configuration setting' 'shellfire_fatten_lib_path' "$shellfire_fatten_lib_path"
+		core_validate_pathNotEmpty $core_commandLine_exitCode_CONFIG 'configuration setting' 'shellfire_fatten_libPath' "$shellfire_fatten_libPath"
 	fi
 }
 
 # Assumes pwd, and so requires this code to be running from this folder
 . "$_program_libPath"/shellfire/core/init.functions "$@"
-
-
-
-
-
-# add a shebang line
-# copy all .init-functions files into a file
-# set the variable  core_init_functionsPath
-# if not compiling:-
-#  * add a core_init_functionsPath=XXXX definition [perhaps as $(core_init_computeFunctionsPath)]
-#  * add a core_init_main "$@"
-#  * repeat for sh, dash, bash
-# else:-
-#  * create special  cores_uses  and  core_functions_register  functions
-#  * explicitly call  core_uses core
-#  *  source program code
-#  * add a core_init_functionsPath=XXXX definition
-#  * add a core_init_main "$@"
-
-# we assemble this file, effectively, and so should include a revision_blob or somesuch so we can tell if we're out-of-date
-# if it ends .init-functions, it goes in here. Order only matters for the final line  init_main "$@"  but we could generate that
-# if we're standing alone, then we need to set core_
-# if we're including all functions, then we need to override core_uses
-
-# 0 create empty file somewhere
-# 1 set the 
-# 2 find all .init-functions, and output to new file
-# 3 (optional) output all other functions by overridding core_use
-
