@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+_program()
+{
+	minor_test()
+	{
+		printf '%s\n' "Hello World"
+	}
+}
+
+readonly _program_name='minor-test'
+readonly _program_version='unversioned'
+readonly _program_package_or_build=''
+readonly _program_copyright='(C) 2014 Raphael Cohn'
+readonly _program_licence='MIT'
+readonly _program_written_by='Raphael Cohn'
+readonly _program_path="$([ "${0%/*}" = "${0}" ] && printf '%s\n' '.' || printf '%s\n' "${0%/*}")"
+readonly _program_libPath="${_program_path}/../../lib"
+readonly _program_etcPath="${_program_path}/../../etc"
+readonly _program_entrypoint='minor_test'
+
+_program_commandLine_parseInitialise()
+{
+	# Needed in help text
+	_program_default_etcPath='/etc'
+	_program_default_libPath='/usr/lib'
+}
+
+_program_commandLine_helpMessage()
+{
+	_program_commandLine_helpMessage_usage="[OPTION]..."
+	_program_commandLine_helpMessage_description="Does nothing."
+	_program_commandLine_helpMessage_options=""
+    _program_commandLine_helpMessage_optionsSpacing='     '
+	_program_commandLine_helpMessage_configurationKeys=""
+	_program_commandLine_helpMessage_examples=""
+}
+
+_program_commandLine_optionExists()
+{
+	echo 'no'
+}
+
+_program_commandLine_processOptionWithoutArgument()
+{
+	:
+}
+
+_program_commandLine_processOptionWithArgument()
+{
+	:
+}
+
+_program_commandLine_handleNonOptions()
+{
+	if [ $# -ne 0 ]; then
+		core_exitError $core_commandLine_exitCode_USAGE "Non-options are not accepted"
+	fi
+}
+
+_program_commandLine_validate()
+{
+	:
+}
+
+# Assumes pwd, and so requires this code to be running from this folder
+. "$_program_libPath"/shellfire/core/init.functions "$@"

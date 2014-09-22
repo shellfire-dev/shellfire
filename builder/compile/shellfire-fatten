@@ -49,6 +49,8 @@
 
 _program()
 {
+	core_usesIn core/variable array
+	
 	core_dependency_requires '*' sed
 	_shellfire_fatten_replaceProgramReadonlyValue()
 	{
@@ -99,10 +101,9 @@ _program()
 		popd
 	}
 
-	core_dependency_requires '*' cat bash chmod
+	core_dependency_requires '*' env bash chmod head cat
 	shellfire_fatten_fattenProgram()
 	{
-		set -x
 		local shellfire_fatten_originalProgram="$core_variable_array_element"
 		local shellfire_fatten_programPath="$(core_compatibility_dirname "$shellfire_fatten_originalProgram")"
 		local shellfire_fatten_programName="$(core_compatibility_basename "$shellfire_fatten_originalProgram")"
@@ -115,26 +116,47 @@ _program()
 		local shellfire_fatten_authors
 		shellfire_fatten_obtainGitDetails
 		
-		# core_init_declares
-		cat >"$shellfire_fatten_bootstrapProgram" <<-'EOF'
-			#!/usr/bin/env bash
-			
-			_program_fattening=1
-			
-			while IFS='=' read -r excludedName excludedValue
-			do
-				printf '%s\n' 1>&2
-			done < <(declare)
-			
-			cd "$shellfire_fatten_programPath" 1>/dev/null
-				. "$shellfire_fatten_originalProgram"
-			cd - 1>/dev/null
-			
-			declare
+		
+		cat >>"$shellfire_fatten_bootstrapProgram" <<-EOF
+			$(head -n 1 "$shellfire_fatten_originalProgram")
+			_program_fattening_shebang="$(head -n 1 "$shellfire_fatten_originalProgram")"
+			$(declare -p shellfire_fatten_programPath)
+			core_init_shell_rexecing=$$
 		EOF
-		chmod +x "$shellfire_fatten_bootstrapProgram"
-		set +x
-		exit 50
+		cat >>"$shellfire_fatten_bootstrapProgram" <<-'EOF'
+			readonly _program_fattening=1
+			readonly _program_fattening_declaredNames=''
+			
+			pushd "$shellfire_fatten_programPath" 1>/dev/null
+				. "$shellfire_fatten_originalProgram"
+			popd - 1>/dev/null
+			
+			# Get rid of the original definition
+			core_dependency_declares()
+			{
+				:
+			}
+			
+			printf '%s\n' "$_program_fattening_shebang"
+			
+			IFS=' '
+			set -o noglob
+			for _program_fattening_declaredName in $_program_fattening_declaredNames
+			do
+				declare -p "$_program_fattening_declaredName"
+			done
+			
+			declare -f
+			printf '%s\n' 'core_init_main "$@"'
+		EOF
+		cat "$shellfire_fatten_bootstrapProgram"
+		exit 70
+		bash "$shellfire_fatten_bootstrapProgram"
+		
+		
+		
+		exit 60
+		
 		cat "$shellfire_fatten_originalProgram" \
 			| _shellfire_fatten_replaceProgramReadonlyValue _program_name "$shellfire_fatten_programName" \
 			| _shellfire_fatten_replaceProgramReadonlyValue _program_version "$shellfire_fatten_version" \
@@ -163,7 +185,6 @@ readonly _program_written_by='Raphael Cohn'
 readonly _program_path="$([ "${0%/*}" = "${0}" ] && printf '%s\n' '.' || printf '%s\n' "${0%/*}")"
 readonly _program_libPath="${_program_path}/../../lib"
 readonly _program_etcPath="${_program_path}/../../etc"
-readonly _program_uses='core/variable/array'
 readonly _program_entrypoint='shellfire_fatten'
 
 _program_commandLine_parseInitialise()
@@ -184,12 +205,13 @@ _program_commandLine_helpMessage()
   -f, --force                 Force fattening even if there are uncommited changes"
     _program_commandLine_helpMessage_optionsSpacing='     '
 	_program_commandLine_helpMessage_configurationKeys="
-  shellfire_fatten_etc_path  Equivalent to --etc-path
-  shellfire_fatten_lib_path  Equivalent to --lib-path
-  shellfire_fatten_repository_path  Equivalent to --repository-path
+  shellfire_fatten_etcPath  Equivalent to --etc-path
+  shellfire_fatten_libPath  Equivalent to --lib-path
+  shellfire_fatten_repositoryPath  Equivalent to --repository-path
+  shellfire_fatten_force  Equivalent to --force (specify yes or no)
 "
 	_program_commandLine_helpMessage_examples="
-  ${_program_name} -r git-repo/bin -- cmake-scripted
+  ${_program_name} -r git-repo/bin -- minor-test
 "
 }
 
