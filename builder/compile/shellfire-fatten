@@ -111,25 +111,41 @@ _program()
 		local shellfire_fatten_temporaryProgram="$shellfire_fatten_fattenedProgram".tmp
 		local shellfire_fatten_bootstrapProgram="$shellfire_fatten_fattenedProgram"
 		
-		local shellfire_fatten_version
 		local shellfire_fatten_branch
+		local shellfire_fatten_commit
 		local shellfire_fatten_authors
+		local shellfire_fatten_version
+		local shellfire_fatten_programPath
 		shellfire_fatten_obtainGitDetails
 		
+		_shellfire_fatten_fattenProgramCallback()
+		{
+			if [ ! -s "$filePath" ]; then
+				return 0
+			fi
+			local lengthOf=".functions"
+			shellfire_fatten_allPackageManagers="$shellfire_fatten_allPackageManagers $(core_variable_allButLastN "$(core_compatibility_basename "$filePath")" ${#lengthOf})"
+		}
+		
+		local shellfire_fatten_allPackageManagers=""
+		core_path_iterateOverFolderPath "$_program_libPath"/"$core_libraryName"/core/dependency/check _shellfire_fatten_fattenProgramCallback
 		
 		cat >>"$shellfire_fatten_bootstrapProgram" <<-EOF
 			$(head -n 1 "$shellfire_fatten_originalProgram")
-			_program_fattening_shebang="$(head -n 1 "$shellfire_fatten_originalProgram")"
-			$(declare -p shellfire_fatten_programPath)
-			core_init_shell_rexecing=$$
+			set -e
+			set -u
+			_program_fattening_shebang='$(head -n 1 "$shellfire_fatten_originalProgram")'
+			_program_fattening_path='$(core_compatibility_dirname "$shellfire_fatten_originalProgram")'
+			_program_fattening_file='$shellfire_fatten_originalProgram'
+			_program_fattening_allPackageManagers="$shellfire_fatten_allPackageManagers"
 		EOF
 		cat >>"$shellfire_fatten_bootstrapProgram" <<-'EOF'
+			core_init_shell_rexecing=$$
 			readonly _program_fattening=1
-			readonly _program_fattening_declaredNames=''
+			_program_fattening_declaredNames=''
 			
-			pushd "$shellfire_fatten_programPath" 1>/dev/null
-				. "$shellfire_fatten_originalProgram"
-			popd - 1>/dev/null
+			cd "$_program_fattening_path" 1>/dev/null
+			. "$_program_fattening_file"
 			
 			# Get rid of the original definitions
 			core_dependency_declares()
@@ -141,8 +157,10 @@ _program()
 				:
 			}
 			
+			# Shebang
 			printf '%s\n' "$_program_fattening_shebang"
 			
+			# Global Variables
 			IFS=' '
 			set -o noglob
 			for _program_fattening_declaredName in $_program_fattening_declaredNames
@@ -150,11 +168,43 @@ _program()
 				declare -p "$_program_fattening_declaredName"
 			done
 			
+			# Dependencies
+			while IFS="$core_variable_array_delimiter" read -r packageManager programName
+			do
+				if [ -z "$packageManager" ]; then
+					break
+				fi
+				
+				if [ "$packageManager" = '*' ]; then
+					packageManagers="$_program_fattening_allPackageManagers"
+				else
+					packageManagers="$packageManager"
+				fi
+				
+				IFS=' '
+				for packageManager in $packageManagers
+				do	
+					for externalDataSourceFolderName in "$_program_name" "$core_libraryName"
+					do
+						externalDataSourceFilePath="$_program_etcPath"/"$externalDataSourceFolderName"/"$packageManager"/"$programName".path
+						if core_path_isReadableNonEmptyFilePath "$externalDataSourceFilePath"; then
+							printf '%s' "declare -r _core_dependency_internalDataSource_${packageManager}_${programName}='"
+							printf '%s' "$(head -n 1 "$externalDataSourceFilePath")
+							printf '%s\n' "'"
+							break
+						fi
+					done
+				done
+			done <<-EOG
+				${_core_dependency_requires}
+			EOG
+			
+			# Functions
 			declare -f
+			
+			# Execute
 			printf '%s\n' 'core_init_main "$@"'
 		EOF
-		cat "$shellfire_fatten_bootstrapProgram"
-		exit 70
 		bash "$shellfire_fatten_bootstrapProgram"
 		
 		
@@ -186,7 +236,7 @@ readonly _program_package_or_build=''
 readonly _program_copyright='(C) 2014 Raphael Cohn'
 readonly _program_licence='MIT'
 readonly _program_written_by='Raphael Cohn'
-readonly _program_path="$([ "${0%/*}" = "${0}" ] && printf '%s\n' '.' || printf '%s\n' "${0%/*}")"
+readonly _program_path="$([ "${_program_fattening_path+set}" = 'set' ] && printf '%s\n' "$_program_fattening_path" || ([ "${0%/*}" = "${0}" ] && printf '%s\n' '.' || printf '%s\n' "${0%/*}"))"
 readonly _program_libPath="${_program_path}/../../lib"
 readonly _program_etcPath="${_program_path}/../../etc"
 readonly _program_entrypoint='shellfire_fatten'
@@ -204,8 +254,8 @@ _program_commandLine_helpMessage()
 	_program_commandLine_helpMessage_description="Builds projects using CMake."
 	_program_commandLine_helpMessage_options="
   -r, --repository-path PATH  Path to folder containing a PROGRAM
-  -e, --etc-path PATH         Path to install fir etc folder [Default ${_program_default_etc_path}]
-  -l, --lib-path PATH         Path to lib folder [Default ${_program_default_lib_path}]
+  -e, --etc-path PATH         Path to install fir etc folder [Default ${_program_default_etcPath}]
+  -l, --lib-path PATH         Path to lib folder [Default ${_program_default_libPath}]
   -f, --force                 Force fattening even if there are uncommited changes"
     _program_commandLine_helpMessage_optionsSpacing='     '
 	_program_commandLine_helpMessage_configurationKeys="
@@ -292,9 +342,15 @@ _program_commandLine_handleNonOptions()
 	for shellfire_fatten_program in "$@"
 	do
 		core_validate_filePathReadableAndExecutableAndNotEmpty $core_commandLine_exitCode_USAGE 'non-options' 'programs' "$shellfire_fatten_program"
+		
+		cd -P "$(core_compatibility_dirname "$shellfire_fatten_program")" 1>/dev/null
+		
+			shellfire_fatten_program="$(pwd)"/"$(core_compatibility_basename "$shellfire_fatten_program")"
+		
+		cd - >/dev/null
+		
+		core_variable_array_append shellfire_fatten_programs "$shellfire_fatten_program"
 	done
-	
-	core_variable_array_append shellfire_fatten_programs "$@"
 }
 
 _program_commandLine_validate()
