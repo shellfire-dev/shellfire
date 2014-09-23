@@ -15,7 +15,6 @@ _program_fattening_declares()
 				return 0
 			fi
 		done
-		echo _program_fattening_declares "$@" 1>&2
 		_program_fattening_declaredNames="$_program_fattening_declaredNames $declares"
 	done
 }
@@ -23,21 +22,60 @@ _program_fattening_declares()
 cd "$_program_fattening_program_path" 1>/dev/null
 . "$_program_fattening_originalProgram"
 
-# Add in _program
-
-# Get rid of the original definitions
-core_dependency_declares()
-{
-	:
-}
-_program()
-{
-	:
-}
-unset _program_fattening_declares
+# Look up license details for use in header
+_core_commandLine_versionMessageLookup
+_program_fattening_declares \
+	_program_licence_description \
+	_program_text \
+	_program_openSourceLicensed \
+	_program_permission \
+	_program_warranty
 
 # Shebang
 printf '%s\n' "$_program_fattening_shebang"
+
+# Header Comments
+printf '# \n'
+printf '# %s\n' "$_program_fattening_program_name ($_program_fattening_program_package_or_build) $_program_fattening_program_version"
+printf '# %s\n' "Copyright $_program_copyright."
+if [ $_program_openSourceLicensed -eq 1 ]; then
+	printf '# %s\n' "Licensed under the $_program_licence_description"
+else
+	printf '# %s\n' "$_program_licence_description"
+fi
+printf '# %s\n' "$_program_permission"
+printf '# %s\n' "$_program_warranty"
+printf '# %s\n' "Written by $_program_fattening_program_written_by."
+printf '# %s\n' "Fattened by shellfire (https://github.com/shellfire-dev/shellfire)."
+printf '# \n'
+
+# _program_* variables
+_program_fattening_outputVariables()
+{
+	local variableName
+	local fattenedVariableName
+	local core_variable_indirectValue_result
+	for variableName in "$@"
+	do
+		fattenedVariableName="_program_fattening${variableName}"
+		core_variable_indirectValue "$fattenedVariableName"
+		printf "declare -r %s='%s'\n" "$variableName" "$core_variable_indirectValue_result"
+	done
+}
+
+# _program_path deliberately omitted
+_program_fattening_declares \
+	_program_copyright \
+	_program_licence \
+	_program_entrypoint
+
+_program_fattening_outputVariables \
+	_program_name \
+	_program_version \
+	_program_package_or_build \
+	_program_written_by \
+	_program_libPath \
+	_program_etcPath
 
 # Global Variables
 IFS=' '
@@ -47,8 +85,8 @@ do
 	declare -p "$_program_fattening_declaredName"
 done
 
-_program_fattening_declaredDependencyNames=''
 # Dependencies
+_program_fattening_declaredDependencyNames=''
 while IFS="$core_variable_array_delimiter" read -r packageManager programName
 do
 	if [ -z "$packageManager" ]; then
@@ -89,6 +127,22 @@ do
 done <<-EOG
 	${_core_dependency_requires}
 EOG
+
+# Get rid of definitions before outputing functions
+core_dependency_declares()
+{
+	:
+}
+_core_commandLine_versionMessageLookup()
+{
+	:
+}
+_program()
+{
+	:
+}
+unset _program_fattening_declares
+unset _program_fattening_outputVariables
 
 # Functions
 declare -f

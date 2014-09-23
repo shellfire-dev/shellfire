@@ -20,7 +20,7 @@ _program()
 	}
 	
 	# We're supposed to use git's "low-level plumbing" and avoid 'porcelain' commands. Given how hideous git's syntax is, life is too short. We'll fix the bugs that arise instead.
-	core_dependency_requires '*' git date awk sort md5sum
+	core_dependency_requires '*' git awk sort date md5sum
 	shellfire_fatten_obtainGitDetails()
 	{
 		pushd "$shellfire_fatten_repositoryPath"
@@ -34,16 +34,15 @@ _program()
 			shellfire_fatten_authors="$(git log --format='%aN' | sort -u | awk 'NR==1 {ORS=""; print $0}; NR>1 {ORS=""; print ", " $0}')"
 			local iso8601Date="$(git log -n 1 --format='%ci')"
 			shellfire_fatten_version="$(date -d "$iso8601Date" '+%Y.%m.%d.%H.%M')"
-			shellfire_fatten_programPath=''
 			
 			if [ "$shellfire_fatten_force" = 'no' ]; then
 				local pendingChanges="$(git diff --minimal --no-color --name-status)"
 				if [ -n "$pendingChanges" ]; then
 					core_exitError $core_commandLine_exitCode_DATAERR "Pending changes in --repository-path '$shellfire_fatten_repositoryPath'"
 				fi
-				shellfire_fatten_packageOrBuild="$shellfire_fatten_branch $shellfire_fatten_commit $(git diff --minimal --no-color | md5sum | awk '{print $1}')"
+				shellfire_fatten_packageOrBuild="$shellfire_fatten_branch commit $shellfire_fatten_commit variant $(git diff --minimal --no-color | md5sum | awk '{print $1}')"
 			else
-				shellfire_fatten_packageOrBuild="$shellfire_fatten_branch $shellfire_fatten_commit "
+				shellfire_fatten_packageOrBuild="$shellfire_fatten_branch commit $shellfire_fatten_commit"
 			fi
 			
 		popd
@@ -66,15 +65,7 @@ _program()
 		popd
 	}
 	
-	core_dependency_requires '*' sed
-	_shellfire_fatten_updateProgramSetting()
-	{
-		local name="$1"
-		local value="$2"
-		sed -e 's,^ '"${name}"'=.*$, '"${name}"'='"'${value}'"',g'
-	}
-	
-	core_dependency_requires '*' env bash chmod head cat
+	core_dependency_requires '*' head bash chmod
 	core_snippet_embed raw bootstrap2
 	shellfire_fatten_fattenProgram()
 	{
@@ -93,17 +84,17 @@ _program()
 			_program_fattening_program_path='$(core_compatibility_dirname "$shellfire_fatten_originalProgram")'
 			_program_fattening_originalProgram='$shellfire_fatten_originalProgram'
 			_program_fattening_allPackageManagers="$shellfire_fatten_allPackageManagers"
+
+			_program_fattening_program_name="$shellfire_fatten_programName"
+			_program_fattening_program_version="$shellfire_fatten_version"
+			_program_fattening_program_package_or_build="$shellfire_fatten_packageOrBuild"
+			_program_fattening_program_written_by="$shellfire_fatten_authors"
+			_program_fattening_program_libPath="$shellfire_fatten_libPath"
+			_program_fattening_program_etcPath="$shellfire_fatten_etcPath"
 		EOF
 		core_snippet_retrieve bootstrap2 >>"$shellfire_fatten_bootstrapProgram"
 		
-		bash "$shellfire_fatten_bootstrapProgram" \
-			| _shellfire_fatten_updateProgramSetting _program_name "$shellfire_fatten_programName" \
-			| _shellfire_fatten_updateProgramSetting _program_version "$shellfire_fatten_version" \
-			| _shellfire_fatten_updateProgramSetting _program_package_or_build "$shellfire_fatten_packageOrBuild" \
-			| _shellfire_fatten_updateProgramSetting _program_path "$shellfire_fatten_programPath" \
-			| _shellfire_fatten_updateProgramSetting _program_libPath "$shellfire_fatten_libPath" \
-			| _shellfire_fatten_updateProgramSetting _program_etcPath "$shellfire_fatten_etcPath" \
-			>"$shellfire_fatten_fattenedProgram"
+		bash "$shellfire_fatten_bootstrapProgram" >"$shellfire_fatten_fattenedProgram"
 		chmod +x "$shellfire_fatten_fattenedProgram"
 	}
 
@@ -121,7 +112,7 @@ _program()
 readonly _program_name='shellfire-fatten'
 readonly _program_version='unversioned'
 readonly _program_package_or_build=''
-readonly _program_copyright='(C) 2014 Raphael Cohn'
+readonly _program_copyright='(c) 2014 Raphael Cohn'
 readonly _program_licence='MIT'
 readonly _program_written_by='Raphael Cohn'
 readonly _program_path="$([ "${_program_fattening_program_path+set}" = 'set' ] && printf '%s\n' "$_program_fattening_program_path" || ([ "${0%/*}" = "${0}" ] && printf '%s\n' '.' || printf '%s\n' "${0%/*}"))"
