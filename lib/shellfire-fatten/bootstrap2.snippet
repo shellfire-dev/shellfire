@@ -1,0 +1,97 @@
+core_init_shell_rexecing=$$
+readonly _program_fattening=1
+
+_program_fattening_declaredNames=''
+_program_fattening_declares()
+{	
+	local declares
+	local alreadyDeclared
+	local IFS=' '
+	for declares in "$@"
+	do
+		for alreadyDeclared in $_program_fattening_declaredNames
+		do
+			if [ "$alreadyDeclared" = "$declares" ]; then
+				return 0
+			fi
+		done
+		echo _program_fattening_declares "$@" 1>&2
+		_program_fattening_declaredNames="$_program_fattening_declaredNames $declares"
+	done
+}
+
+cd "$_program_fattening_program_path" 1>/dev/null
+. "$_program_fattening_originalProgram"
+
+# Add in _program
+
+# Get rid of the original definitions
+core_dependency_declares()
+{
+	:
+}
+_program()
+{
+	:
+}
+unset _program_fattening_declares
+
+# Shebang
+printf '%s\n' "$_program_fattening_shebang"
+
+# Global Variables
+IFS=' '
+set -o noglob
+for _program_fattening_declaredName in $_program_fattening_declaredNames
+do
+	declare -p "$_program_fattening_declaredName"
+done
+
+_program_fattening_declaredDependencyNames=''
+# Dependencies
+while IFS="$core_variable_array_delimiter" read -r packageManager programName
+do
+	if [ -z "$packageManager" ]; then
+		break
+	fi
+	
+	if [ "$packageManager" = '*' ]; then
+		packageManagers="$_program_fattening_allPackageManagers"
+	else
+		packageManagers="$packageManager"
+	fi
+	
+	IFS=' '
+	for packageManager in $packageManagers
+	do	
+		for externalDataSourceFolderName in "$_program_name" "$core_libraryName"
+		do
+			externalDataSourceFilePath="$_program_etcPath"/"$externalDataSourceFolderName"/paths.d/"$packageManager"/"$programName".path
+			if core_path_isReadableNonEmptyFilePath "$externalDataSourceFilePath"; then
+				
+				_program_fattening_declaredDependencyName="_core_dependency_internalDataSource_${packageManager}_${programName}"
+				for existingName in $_program_fattening_declaredDependencyNames
+				do
+					if [ "$existingName" = "$_program_fattening_declaredDependencyName" ]; then
+						break 2
+					fi
+				done
+				
+				printf '%s' "declare -r ${_program_fattening_declaredDependencyName}='"
+				printf '%s' "$(head -n 1 "$externalDataSourceFilePath")"
+				printf '%s\n' "'"
+				
+				_program_fattening_declaredDependencyNames="$_program_fattening_declaredDependencyNames $_program_fattening_declaredDependencyName"
+				break
+			fi
+		done
+	done
+done <<-EOG
+	${_core_dependency_requires}
+EOG
+
+# Functions
+declare -f
+
+# Execute
+printf '%s\n' 'core_init_main "$@"'

@@ -1,74 +1,22 @@
 #!/usr/bin/env bash
 
-# TODO: core_uses and core_functions_register are 'special' functions that a simple sourcing compiler writes stubs for
-
-# goal is to create three forms of executable
-# * one that is completely standalone, including paths files [but can still make use of overrides]
-# * one that is completely standalone, excluding paths files and with functions in /lib
-#   * possible variant that shares functions? ?why? creates unnecesary version tensions, requires ABI compat, etc - a bit like shared libraries today
-#   * if not the above, then core_init_functionsPath
-# * one that can run from checkout of git & git submodules
-
-# paths files are composable
-# * work simply by combining those defined in shellfire with local choices
-# * allow local, git friendly, replacements OR additions
-
-#compile_deduceRepositoryFolderPath()
-#{
-#	if [ "${TRAVIS_BUILD_DIR+set}" = 'set' ]; then
-#		readonly compile_repositoryFolderPath="$TRAVIS_BUILD_DIR"
-#	else
-#		readonly compile_repositoryFolderPath="$(pwd)"
-#	fi
-#	# TRAVIS_COMMIT='ab8186e73e9676d2c547f07b309499ebeed27ec0'
-#}
-
-# add a shebang line
-# copy all .init-functions files into a file
-# set the variable  core_init_functionsPath
-# if not compiling:-
-#  * add a core_init_functionsPath=XXXX definition [perhaps as $(core_init_computeFunctionsPath)]
-#  * add a core_init_main "$@"
-#  * repeat for sh, dash, bash
-# else:-
-#  * create special  cores_uses  and  core_functions_register  functions
-#  * explicitly call  core_uses core
-#  *  source program code
-#  * add a core_init_functionsPath=XXXX definition
-#  * add a core_init_main "$@"
-
-# we assemble this file, effectively, and so should include a revision_blob or somesuch so we can tell if we're out-of-date
-# if it ends .init-functions, it goes in here. Order only matters for the final line  init_main "$@"  but we could generate that
-# if we're standing alone, then we need to set core_
-# if we're including all functions, then we need to override core_uses
-
-# 0 create empty file somewhere
-# 1 set the 
-# 2 find all .init-functions, and output to new file
-# 3 (optional) output all other functions by overridding core_use
-
 _program()
 {
 	core_usesIn core/variable array
 	
-	core_dependency_requires '*' sed
-	_shellfire_fatten_replaceProgramReadonlyValue()
+	shellfire_fatten_discoverPackageManagers()
 	{
-		local name="$1"
-		local value="$2"
-		sed -e 's,^readonly '"${name}"'=.*$,readonly '"${name}"'='"'${value}'"',g'
-	}
-	
-	_shellfire_fatten_removeInitFunctionsSourcing()
-	{
-		sed -e 's,^. "$_program_libPath"/shellfire/core/init.functions "$@".*,,g'
-	}
-	
-	shellfire_fatten_createTemporaryFolder()
-	{
-		local TMP_FOLDER
-		core_temporaryFiles_newFolderToRemoveOnExit
-		shellfire_fatten_outputFolderPath="$TMP_FOLDER"
+		_shellfire_fatten_discoverPackageManagers_callback()
+		{
+			if [ ! -s "$filePath" ]; then
+				return 0
+			fi
+			local lengthOf=".functions"
+			shellfire_fatten_allPackageManagers="$shellfire_fatten_allPackageManagers $(core_variable_allButLastN "$(core_compatibility_basename "$filePath")" ${#lengthOf})"
+		}
+		
+		shellfire_fatten_allPackageManagers=''
+		core_path_iterateOverFolderPath "$_program_libPath"/"$core_libraryName"/core/dependency/check _shellfire_fatten_discoverPackageManagers_callback
 	}
 	
 	# We're supposed to use git's "low-level plumbing" and avoid 'porcelain' commands. Given how hideous git's syntax is, life is too short. We'll fix the bugs that arise instead.
@@ -100,143 +48,71 @@ _program()
 			
 		popd
 	}
-
+	
+	shellfire_fatten_createTemporaryFolder()
+	{
+		local TMP_FOLDER
+		core_temporaryFiles_newFolderToRemoveOnExit
+		shellfire_fatten_temporaryFolderPath="$TMP_FOLDER"
+	}
+	
+	shellfire_fatten_createOutputFolder()
+	{
+		mkdir -m 0755 -p "$shellfire_fatten_outputPath" || core_exitError $core_commandLine_exitCode_CANTCREAT "Can not create --output-path '$shellfire_fatten_outputPath'"
+		pushd "$shellfire_fatten_outputPath"
+		
+			shellfire_fatten_outputPath="$(pwd -P)"
+		
+		popd
+	}
+	
+	core_dependency_requires '*' sed
+	_shellfire_fatten_updateProgramSetting()
+	{
+		local name="$1"
+		local value="$2"
+		sed -e 's,^ '"${name}"'=.*$, '"${name}"'='"'${value}'"',g'
+	}
+	
 	core_dependency_requires '*' env bash chmod head cat
+	core_snippet_embed raw bootstrap2
 	shellfire_fatten_fattenProgram()
 	{
 		local shellfire_fatten_originalProgram="$core_variable_array_element"
 		local shellfire_fatten_programPath="$(core_compatibility_dirname "$shellfire_fatten_originalProgram")"
 		local shellfire_fatten_programName="$(core_compatibility_basename "$shellfire_fatten_originalProgram")"
-		local shellfire_fatten_fattenedProgram="$shellfire_fatten_outputFolderPath"/"$shellfire_fatten_programName"
-		local shellfire_fatten_temporaryProgram="$shellfire_fatten_fattenedProgram".tmp
-		local shellfire_fatten_bootstrapProgram="$shellfire_fatten_fattenedProgram"
-		
-		local shellfire_fatten_branch
-		local shellfire_fatten_commit
-		local shellfire_fatten_authors
-		local shellfire_fatten_version
-		local shellfire_fatten_programPath
-		shellfire_fatten_obtainGitDetails
-		
-		_shellfire_fatten_fattenProgramCallback()
-		{
-			if [ ! -s "$filePath" ]; then
-				return 0
-			fi
-			local lengthOf=".functions"
-			shellfire_fatten_allPackageManagers="$shellfire_fatten_allPackageManagers $(core_variable_allButLastN "$(core_compatibility_basename "$filePath")" ${#lengthOf})"
-		}
-		
-		local shellfire_fatten_allPackageManagers=""
-		core_path_iterateOverFolderPath "$_program_libPath"/"$core_libraryName"/core/dependency/check _shellfire_fatten_fattenProgramCallback
+		local shellfire_fatten_fattenedProgram="$shellfire_fatten_outputPath"/"$shellfire_fatten_programName"
+		local shellfire_fatten_bootstrapProgram="$shellfire_fatten_temporaryFolderPath"/"$shellfire_fatten_programName"
+		local shellfire_fatten_shebang="$(head -n 1 "$shellfire_fatten_originalProgram")"
 		
 		cat >>"$shellfire_fatten_bootstrapProgram" <<-EOF
-			$(head -n 1 "$shellfire_fatten_originalProgram")
+			$shellfire_fatten_shebang
 			set -e
 			set -u
-			_program_fattening_shebang='$(head -n 1 "$shellfire_fatten_originalProgram")'
-			_program_fattening_path='$(core_compatibility_dirname "$shellfire_fatten_originalProgram")'
-			_program_fattening_file='$shellfire_fatten_originalProgram'
+			_program_fattening_shebang='$shellfire_fatten_shebang'
+			_program_fattening_program_path='$(core_compatibility_dirname "$shellfire_fatten_originalProgram")'
+			_program_fattening_originalProgram='$shellfire_fatten_originalProgram'
 			_program_fattening_allPackageManagers="$shellfire_fatten_allPackageManagers"
 		EOF
-		cat >>"$shellfire_fatten_bootstrapProgram" <<-'EOF'
-			core_init_shell_rexecing=$$
-			readonly _program_fattening=1
-			_program_fattening_declaredNames=''
-			
-			cd "$_program_fattening_path" 1>/dev/null
-			. "$_program_fattening_file"
-			
-			# Get rid of the original definitions
-			core_dependency_declares()
-			{
-				:
-			}
-			_program()
-			{
-				:
-			}
-			
-			# Shebang
-			printf '%s\n' "$_program_fattening_shebang"
-			
-			# Global Variables
-			IFS=' '
-			set -o noglob
-			for _program_fattening_declaredName in $_program_fattening_declaredNames
-			do
-				declare -p "$_program_fattening_declaredName"
-			done
-			
-			_program_fattening_declaredDependencyNames=''
-			# Dependencies
-			while IFS="$core_variable_array_delimiter" read -r packageManager programName
-			do
-				if [ -z "$packageManager" ]; then
-					break
-				fi
-				
-				if [ "$packageManager" = '*' ]; then
-					packageManagers="$_program_fattening_allPackageManagers"
-				else
-					packageManagers="$packageManager"
-				fi
-				
-				IFS=' '
-				for packageManager in $packageManagers
-				do	
-					for externalDataSourceFolderName in "$_program_name" "$core_libraryName"
-					do
-						externalDataSourceFilePath="$_program_etcPath"/"$externalDataSourceFolderName"/paths.d/"$packageManager"/"$programName".path
-						if core_path_isReadableNonEmptyFilePath "$externalDataSourceFilePath"; then
-							
-							_program_fattening_declaredDependencyName="_core_dependency_internalDataSource_${packageManager}_${programName}"
-							for existingName in $_program_fattening_declaredDependencyNames
-							do
-								if [ "$existingName" = "$_program_fattening_declaredDependencyName" ]; then
-									break 2
-								fi
-							done
-							
-							printf '%s' "declare -r ${_program_fattening_declaredDependencyName}='"
-							printf '%s' "$(head -n 1 "$externalDataSourceFilePath")"
-							printf '%s\n' "'"
-							
-							_program_fattening_declaredDependencyNames="$_program_fattening_declaredDependencyNames $_program_fattening_declaredDependencyName"
-							break
-						fi
-					done
-				done
-			done <<-EOG
-				${_core_dependency_requires}
-			EOG
-			
-			# Functions
-			declare -f
-			
-			# Execute
-			printf '%s\n' 'core_init_main "$@"'
-		EOF
-		bash "$shellfire_fatten_bootstrapProgram"
+		core_snippet_retrieve bootstrap2 >>"$shellfire_fatten_bootstrapProgram"
 		
-		
-		
-		exit 60
-		
-		cat "$shellfire_fatten_originalProgram" \
-			| _shellfire_fatten_replaceProgramReadonlyValue _program_name "$shellfire_fatten_programName" \
-			| _shellfire_fatten_replaceProgramReadonlyValue _program_version "$shellfire_fatten_version" \
-			| _shellfire_fatten_replaceProgramReadonlyValue _program_package_or_build "$shellfire_fatten_packageOrBuild" \
-			| _shellfire_fatten_replaceProgramReadonlyValue _program_path "$shellfire_fatten_programPath" \
-			| _shellfire_fatten_replaceProgramReadonlyValue _program_libPath "$shellfire_fatten_libPath" \
-			| _shellfire_fatten_replaceProgramReadonlyValue _program_etcPath "$shellfire_fatten_etcPath" \
-			| _shellfire_fatten_removeInitFunctionsSourcing
+		bash "$shellfire_fatten_bootstrapProgram" \
+			| _shellfire_fatten_updateProgramSetting _program_name "$shellfire_fatten_programName" \
+			| _shellfire_fatten_updateProgramSetting _program_version "$shellfire_fatten_version" \
+			| _shellfire_fatten_updateProgramSetting _program_package_or_build "$shellfire_fatten_packageOrBuild" \
+			| _shellfire_fatten_updateProgramSetting _program_path "$shellfire_fatten_programPath" \
+			| _shellfire_fatten_updateProgramSetting _program_libPath "$shellfire_fatten_libPath" \
+			| _shellfire_fatten_updateProgramSetting _program_etcPath "$shellfire_fatten_etcPath" \
+			>"$shellfire_fatten_fattenedProgram"
+		chmod +x "$shellfire_fatten_fattenedProgram"
 	}
 
 	shellfire_fatten()
 	{
-		local shellfire_fatten_outputFolderPath
+		shellfire_fatten_discoverPackageManagers
+		shellfire_fatten_obtainGitDetails
 		shellfire_fatten_createTemporaryFolder
+		shellfire_fatten_createOutputFolder
 		
 		core_variable_array_iterate shellfire_fatten_programs shellfire_fatten_fattenProgram
 	}
@@ -248,7 +124,7 @@ readonly _program_package_or_build=''
 readonly _program_copyright='(C) 2014 Raphael Cohn'
 readonly _program_licence='MIT'
 readonly _program_written_by='Raphael Cohn'
-readonly _program_path="$([ "${_program_fattening_path+set}" = 'set' ] && printf '%s\n' "$_program_fattening_path" || ([ "${0%/*}" = "${0}" ] && printf '%s\n' '.' || printf '%s\n' "${0%/*}"))"
+readonly _program_path="$([ "${_program_fattening_program_path+set}" = 'set' ] && printf '%s\n' "$_program_fattening_program_path" || ([ "${0%/*}" = "${0}" ] && printf '%s\n' '.' || printf '%s\n' "${0%/*}"))"
 readonly _program_libPath="${_program_path}/../../lib"
 readonly _program_etcPath="${_program_path}/../../etc"
 readonly _program_entrypoint='shellfire_fatten'
@@ -263,18 +139,20 @@ _program_commandLine_parseInitialise()
 _program_commandLine_helpMessage()
 {
 	_program_commandLine_helpMessage_usage="[OPTION]... -- [PROGRAMS]..."
-	_program_commandLine_helpMessage_description="Builds projects using CMake."
+	_program_commandLine_helpMessage_description="Fattens shellfire executables so they standalone."
 	_program_commandLine_helpMessage_options="
   -r, --repository-path PATH  Path to folder containing a PROGRAM
   -e, --etc-path PATH         Path to install fir etc folder [Default ${_program_default_etcPath}]
   -l, --lib-path PATH         Path to lib folder [Default ${_program_default_libPath}]
-  -f, --force                 Force fattening even if there are uncommited changes"
+  -f, --force                 Force fattening even if there are uncommited changes
+  -o, --output-path PATH      Path to folder (created in necessary) for fattened PROGRAM"
     _program_commandLine_helpMessage_optionsSpacing='     '
 	_program_commandLine_helpMessage_configurationKeys="
   shellfire_fatten_etcPath  Equivalent to --etc-path
   shellfire_fatten_libPath  Equivalent to --lib-path
   shellfire_fatten_repositoryPath  Equivalent to --repository-path
   shellfire_fatten_force  Equivalent to --force (specify yes or no)
+  shellfire_fatten_outputPath  Equivalent to --output-path
 "
 	_program_commandLine_helpMessage_examples="
   ${_program_name} -r git-repo/bin -- minor-test
@@ -298,6 +176,10 @@ _program_commandLine_optionExists()
 		;;
 		
 		l|lib-path)
+			echo 'yes-argumented'
+		;;
+		
+		o|output-path)
 			echo 'yes-argumented'
 		;;
 		
@@ -336,6 +218,11 @@ _program_commandLine_processOptionWithArgument()
 		l|lib-path)
 			core_validate_pathNotEmpty $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
 			shellfire_fatten_libPath="$optionValue"
+		;;
+		
+		o|output-path)
+			core_validate_pathNotEmpty $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			shellfire_fatten_outputPath="$optionValue"
 		;;
 		
 		*)
@@ -392,6 +279,12 @@ _program_commandLine_validate()
 		shellfire_fatten_libPath="$_program_default_libPath"
 	else
 		core_validate_pathNotEmpty $core_commandLine_exitCode_CONFIG 'configuration setting' 'shellfire_fatten_libPath' "$shellfire_fatten_libPath"
+	fi
+	
+	if core_variable_isUnset shellfire_fatten_outputPath; then
+		core_exitError $core_commandLine_exitCode_USAGE "The option '--output-path (-o)' must be specified"
+	else
+		core_validate_pathNotEmpty $core_commandLine_exitCode_CONFIG 'configuration setting' 'shellfire_fatten_outputPath' "$shellfire_fatten_outputPath"
 	fi
 }
 
