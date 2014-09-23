@@ -66,7 +66,7 @@ _program()
 	}
 	
 	core_dependency_requires '*' head bash chmod
-	core_snippet_embed raw bootstrap2
+	core_snippet_embed raw bootstrap
 	shellfire_fatten_fattenProgram()
 	{
 		local shellfire_fatten_originalProgram="$core_variable_array_element"
@@ -92,7 +92,7 @@ _program()
 			_program_fattening_program_libPath="$shellfire_fatten_libPath"
 			_program_fattening_program_etcPath="$shellfire_fatten_etcPath"
 		EOF
-		core_snippet_retrieve bootstrap2 >>"$shellfire_fatten_bootstrapProgram"
+		core_snippet_retrieve bootstrap >>"$shellfire_fatten_bootstrapProgram"
 		
 		bash "$shellfire_fatten_bootstrapProgram" >"$shellfire_fatten_fattenedProgram"
 		chmod +x "$shellfire_fatten_fattenedProgram"

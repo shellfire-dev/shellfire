@@ -1,70 +1,82 @@
 #!/usr/bin/env sh
-set -e
-set -u
 
-installIfCommandNotPresent()
+_program()
 {
-	local program="$1"
-	shift 1
-	
-	if command -v "$program" 1>/dev/null 2>/dev/null ; then
-		return 0
+	core_usesIn core/dependency/check Homebrew
+	core_usesIn core/dependency/languagePackageManagers Ruby
+	macosx_environment_setup()
+	{
+		core_dependency_check_Homebrew_installPackageManagerIfRequired
+		
+		core_dependency_check_forcePackageManagerUpgradeDuringInstall=1 core_dependency_check_Homebrew_packageManager \
+			ruby \
+			bash \
+			dash \
+			ksh \
+			pdksh \
+			mksh \
+			zsh
+		
+		core_dependency_languagePackageManagers_Ruby_packageManager \
+			travis-lint \
+			travis
+	}
+}
+
+readonly _program_name='macosx-environment-setup'
+readonly _program_version='unversioned'
+readonly _program_package_or_build=''
+readonly _program_copyright='(c) 2014 Raphael Cohn'
+readonly _program_licence='MIT'
+readonly _program_written_by='Raphael Cohn'
+readonly _program_path="$([ "${_program_fattening_program_path+set}" = 'set' ] && printf '%s\n' "$_program_fattening_program_path" || ([ "${0%/*}" = "${0}" ] && printf '%s\n' '.' || printf '%s\n' "${0%/*}"))"
+readonly _program_libPath="${_program_path}/../../lib"
+readonly _program_etcPath="${_program_path}/../../etc"
+readonly _program_entrypoint='macosx_environment_setup'
+
+_program_commandLine_parseInitialise()
+{
+	:
+}
+
+_program_commandLine_helpMessage()
+{
+	_program_commandLine_helpMessage_usage="[OPTION]..."
+	_program_commandLine_helpMessage_description="Sets up build environment for Mac OS X."
+	_program_commandLine_helpMessage_options=""
+    _program_commandLine_helpMessage_optionsSpacing='     '
+	_program_commandLine_helpMessage_configurationKeys=""
+	_program_commandLine_helpMessage_examples="
+  ${_program_name}
+"
+}
+
+_program_commandLine_optionExists()
+{
+	echo 'no'
+}
+
+_program_commandLine_processOptionWithoutArgument()
+{
+	echo 'no'
+}
+
+_program_commandLine_processOptionWithArgument()
+{
+	echo 'no'
+}
+
+_program_commandLine_handleNonOptions()
+{
+	if [ $# -ne 0 ]; then
+		core_exitError $core_commandLine_exitCode_USAGE "Non-options are not allowed"
 	fi
-	
-	printf '%s\n' "Installing $program"
-	"$@"
 }
 
-installHomebrew()
+_program_commandLine_validate()
 {
-	ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-	brew doctor
-	
-	# check is /usr/local/{s}bin is on the path
+	:
 }
 
-installHomebrewDependency()
-{
-	printf '%s\n' "Updating Homebrew"
-	brew update
-	
-	printf '%s\n' "Upgrading Homebrew"
-	brew upgrade
-	
-	# need to take into account taps... duplicates a lot of logic!!!
-	
-	local dependency
-	for dependency in "$@"
-	do
-		if ! brew --prefix "$dependency" 1>/dev/null 2>/dev/null; then
-			brew install "$dependency"
-		fi
-	done
-}
-
-installRubyGemDependency()
-{
-	local dependency
-	for dependency in "$@"
-	do
-		# gem help list documentation (2.1.2_3) refers to 'STRING' when it means 'regex'!
-		if ! gem list "^${dependency}$" --installed --local 1>/dev/null; then
-			gem install "$dependency"
-		fi
-	done
-}
-
-installIfCommandNotPresent brew installHomebrew
-
-installHomebrewDependency \
-	ruby \
-	bash \
-	dash \
-	ksh \
-	pdksh \
-	mksh \
-	zsh
-
-installRubyGemDependency \
-	travis-lint \
-	travis
+# Assumes pwd, and so requires this code to be running from this folder
+. "$_program_libPath"/shellfire/core/init.functions "$@"

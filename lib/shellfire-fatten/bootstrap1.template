@@ -1,7 +1,0 @@
-$(head -n 1 "$shellfire_fatten_originalProgram")
-set -e
-set -u
-_program_fattening_shebang='$(head -n 1 "$shellfire_fatten_originalProgram")'
-_program_fattening_program_path='$(core_compatibility_dirname "$shellfire_fatten_originalProgram")'
-_program_fattening_originalProgram='$shellfire_fatten_originalProgram'
-_program_fattening_allPackageManagers="$shellfire_fatten_allPackageManagers"
