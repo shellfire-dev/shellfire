@@ -19,5 +19,4 @@ readonly _program_libPath="${_program_path}/lib"
 readonly _program_etcPath="${_program_path}/etc"
 readonly _program_entrypoint='hello_world_example'
 
-# Assumes pwd, and so requires this code to be running from this folder
 . "$_program_libPath"/shellfire/core/init.functions "$@"
