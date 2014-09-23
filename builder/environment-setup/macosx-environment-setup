@@ -34,6 +34,11 @@ readonly _program_libPath="${_program_path}/../../lib"
 readonly _program_etcPath="${_program_path}/../../etc"
 readonly _program_entrypoint='macosx_environment_setup'
 
+_program_commandLine_parseInitialise()
+{
+	core_init_verbosity=1
+}
+
 _program_commandLine_helpMessage()
 {
 	_program_commandLine_helpMessage_description="Sets up build environment for Mac OS X."
