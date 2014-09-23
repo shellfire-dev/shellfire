@@ -2,27 +2,22 @@
 
 _program()
 {
-	minor_test()
+	hello_world_example()
 	{
 		printf '%s\n' "Hello World"
 	}
 }
 
-readonly _program_name='minor-test'
+readonly _program_name='hello-world-example'
 readonly _program_version='unversioned'
 readonly _program_package_or_build=''
 readonly _program_copyright='(c) 2014 Raphael Cohn'
 readonly _program_licence='MIT'
 readonly _program_written_by='Raphael Cohn'
 readonly _program_path="$([ "${_program_fattening_program_path+set}" = 'set' ] && printf '%s\n' "$_program_fattening_program_path" || ([ "${0%/*}" = "${0}" ] && printf '%s\n' '.' || printf '%s\n' "${0%/*}"))"
-readonly _program_libPath="${_program_path}/../../lib"
-readonly _program_etcPath="${_program_path}/../../etc"
-readonly _program_entrypoint='minor_test'
-
-_program_commandLine_handleNonOptions()
-{
-	echo Mummy
-}
+readonly _program_libPath="${_program_path}/lib"
+readonly _program_etcPath="${_program_path}/etc"
+readonly _program_entrypoint='hello_world_example'
 
 # Assumes pwd, and so requires this code to be running from this folder
 . "$_program_libPath"/shellfire/core/init.functions "$@"
