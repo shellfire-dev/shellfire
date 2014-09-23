@@ -19,48 +19,9 @@ readonly _program_libPath="${_program_path}/../../lib"
 readonly _program_etcPath="${_program_path}/../../etc"
 readonly _program_entrypoint='minor_test'
 
-_program_commandLine_parseInitialise()
-{
-	# Needed in help text
-	_program_default_etcPath='/etc'
-	_program_default_libPath='/usr/lib'
-}
-
-_program_commandLine_helpMessage()
-{
-	_program_commandLine_helpMessage_usage="[OPTION]..."
-	_program_commandLine_helpMessage_description="Does nothing."
-	_program_commandLine_helpMessage_options=""
-    _program_commandLine_helpMessage_optionsSpacing='     '
-	_program_commandLine_helpMessage_configurationKeys=""
-	_program_commandLine_helpMessage_examples=""
-}
-
-_program_commandLine_optionExists()
-{
-	echo 'no'
-}
-
-_program_commandLine_processOptionWithoutArgument()
-{
-	:
-}
-
-_program_commandLine_processOptionWithArgument()
-{
-	:
-}
-
 _program_commandLine_handleNonOptions()
 {
-	if [ $# -ne 0 ]; then
-		core_exitError $core_commandLine_exitCode_USAGE "Non-options are not accepted"
-	fi
-}
-
-_program_commandLine_validate()
-{
-	:
+	echo Mummy
 }
 
 # Assumes pwd, and so requires this code to be running from this folder
