@@ -34,49 +34,9 @@ readonly _program_libPath="${_program_path}/../../lib"
 readonly _program_etcPath="${_program_path}/../../etc"
 readonly _program_entrypoint='macosx_environment_setup'
 
-_program_commandLine_parseInitialise()
-{
-	:
-}
-
 _program_commandLine_helpMessage()
 {
-	_program_commandLine_helpMessage_usage="[OPTION]..."
 	_program_commandLine_helpMessage_description="Sets up build environment for Mac OS X."
-	_program_commandLine_helpMessage_options=""
-    _program_commandLine_helpMessage_optionsSpacing='     '
-	_program_commandLine_helpMessage_configurationKeys=""
-	_program_commandLine_helpMessage_examples="
-  ${_program_name}
-"
 }
 
-_program_commandLine_optionExists()
-{
-	echo 'no'
-}
-
-_program_commandLine_processOptionWithoutArgument()
-{
-	echo 'no'
-}
-
-_program_commandLine_processOptionWithArgument()
-{
-	echo 'no'
-}
-
-_program_commandLine_handleNonOptions()
-{
-	if [ $# -ne 0 ]; then
-		core_exitError $core_commandLine_exitCode_USAGE "Non-options are not allowed"
-	fi
-}
-
-_program_commandLine_validate()
-{
-	:
-}
-
-# Assumes pwd, and so requires this code to be running from this folder
 . "$_program_libPath"/shellfire/core/init.functions "$@"
