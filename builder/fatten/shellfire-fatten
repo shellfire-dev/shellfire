@@ -251,7 +251,7 @@ _program_commandLine_validate()
 	if core_variable_isUnset shellfire_fatten_force; then
 		shellfire_fatten_force='no'
 	else
-		core_validate_yesOrNo $core_commandLine_exitCode_CONFIG 'configuration setting' 'shellfire_fatten_force' "$shellfire_fatten_force"
+		core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'configuration setting' 'shellfire_fatten_force' "$shellfire_fatten_force"
 	fi
 	
 	if core_variable_isUnset shellfire_fatten_repositoryPath; then
