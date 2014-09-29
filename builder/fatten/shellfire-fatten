@@ -226,7 +226,7 @@ _program_commandLine_processOptionWithArgument()
 _program_commandLine_handleNonOptions()
 {
 	if [ $# -eq 0 ]; then
-		core_exitError $core_commandLine_exitCode_USAGE "No programs specified"
+		core_commandLine_exitBadCommandLine "No programs specified"
 	fi
 	local shellfire_fatten_program
 	for shellfire_fatten_program in "$@"
@@ -255,7 +255,7 @@ _program_commandLine_validate()
 	fi
 	
 	if core_variable_isUnset shellfire_fatten_repositoryPath; then
-		core_exitError $core_commandLine_exitCode_USAGE "The option '--repository-path (-r)' must be specified"
+		core_commandLine_exitBadCommandLine "The option '--repository-path (-r)' must be specified"
 	else
 		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'configuration setting' 'shellfire_fatten_repositoryPath' "$shellfire_fatten_repositoryPath"
 	fi
@@ -273,7 +273,7 @@ _program_commandLine_validate()
 	fi
 	
 	if core_variable_isUnset shellfire_fatten_outputPath; then
-		core_exitError $core_commandLine_exitCode_USAGE "The option '--output-path (-o)' must be specified"
+		core_commandLine_exitBadCommandLine "The option '--output-path (-o)' must be specified"
 	else
 		core_validate_pathNotEmpty $core_commandLine_exitCode_CONFIG 'configuration setting' 'shellfire_fatten_outputPath' "$shellfire_fatten_outputPath"
 	fi
