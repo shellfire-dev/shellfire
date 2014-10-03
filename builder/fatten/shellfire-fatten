@@ -91,6 +91,7 @@ _program()
 			_program_fattening_program_written_by="$shellfire_fatten_authors"
 			_program_fattening_program_libPath="$shellfire_fatten_libPath"
 			_program_fattening_program_etcPath="$shellfire_fatten_etcPath"
+			_program_fattening_program_varPath="$shellfire_fatten_varPath"
 		EOF
 		core_snippet_retrieve bootstrap >>"$shellfire_fatten_bootstrapProgram"
 		
@@ -118,6 +119,7 @@ readonly _program_written_by='Raphael Cohn'
 readonly _program_path="$([ "${_program_fattening_program_path+set}" = 'set' ] && printf '%s\n' "$_program_fattening_program_path" || ([ "${0%/*}" = "${0}" ] && printf '%s\n' '.' || printf '%s\n' "${0%/*}"))"
 readonly _program_libPath="${_program_path}/../../lib"
 readonly _program_etcPath="${_program_path}/../../etc"
+readonly _program_varPath="${_program_path}/../../var"
 readonly _program_entrypoint='shellfire_fatten'
 
 _program_commandLine_parseInitialise()
@@ -125,6 +127,7 @@ _program_commandLine_parseInitialise()
 	# Needed in help text
 	_program_default_etcPath='/etc'
 	_program_default_libPath='/usr/lib'
+	_program_default_varPath='/var'
 }
 
 _program_commandLine_helpMessage()
@@ -135,12 +138,14 @@ _program_commandLine_helpMessage()
   -r, --repository-path PATH  Path to folder containing a PROGRAM
   -e, --etc-path PATH         Path to install fir etc folder [Default ${_program_default_etcPath}]
   -l, --lib-path PATH         Path to lib folder [Default ${_program_default_libPath}]
+  -l, --var-path PATH         Path to var folder [Default ${_program_default_varPath}]
   -f, --force                 Force fattening even if there are uncommited changes
   -o, --output-path PATH      Path to folder (created in necessary) for fattened PROGRAM"
     _program_commandLine_helpMessage_optionsSpacing='     '
 	_program_commandLine_helpMessage_configurationKeys="
   shellfire_fatten_etcPath  Equivalent to --etc-path
   shellfire_fatten_libPath  Equivalent to --lib-path
+  shellfire_fatten_varPath  Equivalent to --var-path
   shellfire_fatten_repositoryPath  Equivalent to --repository-path
   shellfire_fatten_force  Equivalent to --force (specify yes or no)
   shellfire_fatten_outputPath  Equivalent to --output-path
@@ -167,6 +172,10 @@ _program_commandLine_optionExists()
 		;;
 		
 		l|lib-path)
+			echo 'yes-argumented'
+		;;
+		
+		l|var-path)
 			echo 'yes-argumented'
 		;;
 		
@@ -209,6 +218,11 @@ _program_commandLine_processOptionWithArgument()
 		l|lib-path)
 			core_validate_pathNotEmpty $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
 			shellfire_fatten_libPath="$optionValue"
+		;;
+		
+		l|var-path)
+			core_validate_pathNotEmpty $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			shellfire_fatten_varPath="$optionValue"
 		;;
 		
 		o|output-path)
@@ -270,6 +284,12 @@ _program_commandLine_validate()
 		shellfire_fatten_libPath="$_program_default_libPath"
 	else
 		core_validate_pathNotEmpty $core_commandLine_exitCode_CONFIG 'configuration setting' 'shellfire_fatten_libPath' "$shellfire_fatten_libPath"
+	fi
+	
+	if core_variable_isUnset shellfire_fatten_varPath; then
+		shellfire_fatten_varPath="$_program_default_varPath"
+	else
+		core_validate_pathNotEmpty $core_commandLine_exitCode_CONFIG 'configuration setting' 'shellfire_fatten_varPath' "$shellfire_fatten_varPath"
 	fi
 	
 	if core_variable_isUnset shellfire_fatten_outputPath; then
