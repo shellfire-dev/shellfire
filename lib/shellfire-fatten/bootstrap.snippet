@@ -59,7 +59,7 @@ _program_fattening_outputVariables()
 	do
 		fattenedVariableName="_program_fattening${variableName}"
 		core_variable_indirectValue "$fattenedVariableName"
-		printf "declare -r %s='%s'\n" "$variableName" "$core_variable_indirectValue_result"
+		printf "declare %s='%s'\n" "$variableName" "$core_variable_indirectValue_result"
 	done
 }
 
@@ -115,7 +115,7 @@ do
 					fi
 				done
 				
-				printf '%s' "declare -r ${_program_fattening_declaredDependencyName}='"
+				printf '%s' "declare ${_program_fattening_declaredDependencyName}='"
 				printf '%s' "$(head -n 1 "$externalDataSourceFilePath")"
 				printf '%s\n' "'"
 				
