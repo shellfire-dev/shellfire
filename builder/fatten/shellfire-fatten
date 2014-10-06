@@ -110,17 +110,17 @@ _program()
 	}
 }
 
-readonly _program_name='shellfire-fatten'
-readonly _program_version='unversioned'
-readonly _program_package_or_build=''
-readonly _program_copyright='(c) 2014 Raphael Cohn'
-readonly _program_licence='MIT'
-readonly _program_written_by='Raphael Cohn'
-readonly _program_path="$([ "${_program_fattening_program_path+set}" = 'set' ] && printf '%s\n' "$_program_fattening_program_path" || ([ "${0%/*}" = "${0}" ] && printf '%s\n' '.' || printf '%s\n' "${0%/*}"))"
-readonly _program_libPath="${_program_path}/../../lib"
-readonly _program_etcPath="${_program_path}/../../etc"
-readonly _program_varPath="${_program_path}/../../var"
-readonly _program_entrypoint='shellfire_fatten'
+_program_name='shellfire-fatten'
+_program_version='unversioned'
+_program_package_or_build=''
+_program_copyright='(c) 2014 Raphael Cohn'
+_program_licence='MIT'
+_program_written_by='Raphael Cohn'
+_program_path="$([ "${_program_fattening_program_path+set}" = 'set' ] && printf '%s\n' "$_program_fattening_program_path" || ([ "${0%/*}" = "${0}" ] && printf '%s\n' '.' || printf '%s\n' "${0%/*}"))"
+_program_libPath="${_program_path}/../../lib"
+_program_etcPath="${_program_path}/../../etc"
+_program_varPath="${_program_path}/../../var"
+_program_entrypoint='shellfire_fatten'
 
 _program_commandLine_parseInitialise()
 {
