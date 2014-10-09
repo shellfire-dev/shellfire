@@ -111,6 +111,7 @@ _program()
 }
 
 _program_name='shellfire-fatten'
+_program_namespace='shellfire_fatten'
 _program_version='unversioned'
 _program_package_or_build=''
 _program_copyright='(c) 2014 Raphael Cohn'
