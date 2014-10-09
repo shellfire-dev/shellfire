@@ -24,6 +24,7 @@ _program()
 }
 
 _program_name='macosx-environment-setup'
+_program_namespace='macosx_environment_setup'
 _program_version='unversioned'
 _program_package_or_build=''
 _program_copyright='(c) 2014 Raphael Cohn'
