@@ -1,0 +1,32 @@
+byte_bit()
+{
+   local -i value=${1:-0}
+   local -i bit=${2-0}
+   local -i bitMask=$(( 1 << bit ))
+   echo -n $(( value & bitMask ? 1 : 0 ))
+}
+
+byte_isBitSet()
+{
+   return $(( 1 - $(byte_bit "$@") ))
+}
+
+# could also assign to a variable using printf syntax (printf -v VAR '%s' $binaryValue)
+byte_printBinary()
+{
+	local binaryValue
+	local -i bit
+	for ((bit=7; bit!=-1; bit--))
+	do
+		binaryValue=${binaryValue}$(byte_bit $1 $bit)
+	done
+	printf '%s' $binaryValue
+}
+
+byte_setBit()
+{
+	local -i binaryValue=$1
+	local -i bit=$2
+	
+	echo -n $(( 1 << bit | binaryValue ))
+}
