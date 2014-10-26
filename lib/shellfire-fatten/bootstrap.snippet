@@ -25,6 +25,9 @@ cd "$_program_fattening_program_path" 1>/dev/null
 if core_variable_isUnset _program_namespace; then
 	_program_namespace="$_program_name"
 fi
+if core_variable_isUnset _program_ignore_dependencies; then
+	_program_ignore_dependencies=0
+fi
 
 # Look up license details for use in header
 _core_commandLine_versionMessageLookup
@@ -70,6 +73,7 @@ _program_fattening_outputVariables()
 # _program_path deliberately omitted
 _program_fattening_declares \
 	_program_namespace \
+	_program_ignore_dependencies \
 	_program_copyright \
 	_program_licence \
 	_program_entrypoint
