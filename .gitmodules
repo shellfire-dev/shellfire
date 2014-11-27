@@ -7,3 +7,18 @@
 [submodule "etc/shellfire/paths.d"]
 	path = etc/shellfire/paths.d
 	url = https://github.com/shellfire-dev/paths.d.git
+[submodule "tutorial/overdrive/etc/shellfire/paths.d"]
+	path = tutorial/overdrive/etc/shellfire/paths.d
+	url = https://github.com/shellfire-dev/paths.d
+[submodule "tutorial/overdrive/lib/shellfire/core"]
+	path = tutorial/overdrive/lib/shellfire/core
+	url = https://github.com/shellfire-dev/core
+[submodule "tutorial/overdrive/lib/shellfire/jsonreader"]
+	path = tutorial/overdrive/lib/shellfire/jsonreader
+	url = https://github.com/shellfire-dev/jsonreader
+[submodule "tutorial/overdrive/lib/shellfire/unicode"]
+	path = tutorial/overdrive/lib/shellfire/unicode
+	url = https://github.com/shellfire-dev/unicode
+[submodule "tutorial/overdrive/lib/shellfire/xmlwriter"]
+	path = tutorial/overdrive/lib/shellfire/xmlwriter
+	url = https://github.com/shellfire-dev/xmlwriter
