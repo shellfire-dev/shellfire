@@ -21,8 +21,8 @@ overdrive_convertJsonFileToXml()
 	if [ -e "$xmlOutputFilePath" ]; then
 		if core_variable_isFalse "$overdrive_force"; then
 			core_message WARN "Skipping conversion of '$jsonGearBoxFileName' to XML as output file already exists"
+			return 0
 		fi
-		return 0
 	fi
 	
 	{
