@@ -97,7 +97,9 @@ Additionally, there's also
 * [fatten], to make standalone shell scripts
 * [paths.d], which contains common locations and package names for different package managers. Used by [core]'s dependency framework as a source of information on where to find programs.
 
-## Getting Started
+## Getting Started: A 10 min tutorial
+
+If you'd rather not follow along, or if you'd prefer to see a complete application, take a look at the files in `tutorial/overdrive`. (On a Mac with TextMate, `mate tutorial/overdrive`).
 
 ### Create a skeleton folder structure
 Create a new repository on GitHub. For this example, we'll assume you called it `overdrive` and you are `normanville`. The [shellfire] application is called `overdrive`. Now, let's create the following folder structure:-
@@ -140,13 +142,10 @@ git submodule add "https://github.com/shellfire-dev/xmlwriter"
 mkdir overdrive
 cd -
 
-git submodule init --update
+git submodule update --init
 
 touch overdrive
 chmod +x overdrive
-
-git add -A .
-git commit -m "Initial structure of a shellfire application"
 
 cd ..
 ```
@@ -214,6 +213,7 @@ Note, it's very important that the very last line of your program is always `. "
 Is it an error to not have any files? Well it, certainly isn't useful. Let's issue a warning.
 
 ```bash
+# Replace _program_commandLine_handleNonOptions() with
 _program_commandLine_handleNonOptions()
 {
 	core_variable_array_initialise overdrive_jsonGearBoxFiles
@@ -233,6 +233,7 @@ _program_commandLine_handleNonOptions()
 Actually, let's make that an error after all:-
 
 ```bash
+# Replace _program_commandLine_handleNonOptions() with
 _program_commandLine_handleNonOptions()
 {
 	core_variable_array_initialise overdrive_jsonGearBoxFiles
@@ -252,12 +253,17 @@ _program_commandLine_handleNonOptions()
 We need somewhere to store out output. How about an option `--output-path`? Let's tell the parser what to do:-
 
 ```bash
+# Place this code above _program_commandLine_handleNonOptions()
 _program_commandLine_optionExists()
 {
 	case "$optionName" in
 	
 		output-path)
 			echo 'yes-argumented'
+		;;
+		
+		*)
+			echo 'no'
 		;;
 	
 	esac
@@ -267,6 +273,7 @@ _program_commandLine_optionExists()
 Of course, we want to actually get the value of that option! In this case, the parser will call `_program_commandLine_processOptionWithArgument()`:-
 
 ```bash
+# Place this code below _program_commandLine_optionExists()
 _program_commandLine_processOptionWithArgument()
 {
 	case "$optionName" in
@@ -282,6 +289,7 @@ _program_commandLine_processOptionWithArgument()
 By convention, we name variables set through command line options as `${_program_name}_lowerTitle`. Of course, it'd be nice to have a short option, `-o`, too, so let's do that:-
 
 ```bash
+# Replace _program_commandLine_optionExists() and _program_commandLine_processOptionWithArgument() with
 _program_commandLine_optionExists()
 {
 	case "$optionName" in
@@ -312,6 +320,7 @@ _program_commandLine_processOptionWithArgument()
 Now, we really ought to validate that output path. Do we need to create it? Possibly. Let's use one of the convenience functions in `core_validate`:-
 
 ```bash
+# Replace _program_commandLine_processOptionWithArgument() with
 _program_commandLine_processOptionWithArgument()
 {
 	case "$optionName" in
@@ -328,6 +337,7 @@ _program_commandLine_processOptionWithArgument()
 Now, we always need an output path. We can't know for sure until all the options have been parsed. Of course, the parser let's us manage that in `_program_commandLine_validate()`:-
 
 ```bash
+# Place this below _program_commandLine_handleNonOptions()
 _program_commandLine_validate()
 {
 	if core_variable_isUnset overdrive_outputPath; then
@@ -339,10 +349,11 @@ _program_commandLine_validate()
 That's a bit tough, though. Why don't we let an administrator set a value in configuration? Configuration is automatically parsed and loaded immediately prior to command line parsing. Of course, if that's the case, we'll need to validate what they've chosen. And, in this case, just because it makes sense, we could default the output path to the current working directory, but let the user know.
 
 ```bash
+# Replace _program_commandLine_handleNonOptions() with
 _program_commandLine_validate()
 {
 	if core_variable_isSet overdrive_outputPath; then
-		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'configuration setting' 'overdrive_outputPath' "$overdrive_outputPath"
+		core_validate_folderPathIsReadableAndSearchableAndWritableOrCanBeCreated $core_commandLine_exitCode_CONFIG 'configuration setting' 'overdrive_outputPath' "$overdrive_outputPath"
 	else
 		core_message INFO "Defaulting --output-path to current working directory"
 		overdrive_outputPath="$(pwd)"
@@ -353,6 +364,7 @@ _program_commandLine_validate()
 Of course, we ought to write an useful help message after all of this. Let's do that with `_program_commandLine_helpMessage()`:-
 
 ```bash
+# Place this above _program_commandLine_optionExists()
 _program_commandLine_helpMessage()
 {
 	_program_commandLine_helpMessage_usage="[OPTION]... -- [JSON GEAR BOX FILE]..."
@@ -360,7 +372,7 @@ _program_commandLine_helpMessage()
 	_program_commandLine_helpMessage_options="
   -s, --output-path PATH      PATH to output to.
                               Defaults to current working directory:-
-                              $(pwd)
+                              $(pwd)"
     _program_commandLine_helpMessage_optionsSpacing='     '
 	_program_commandLine_helpMessage_configurationKeys="
   swaddle_outputPath     Equivalent to --output-path
@@ -371,24 +383,18 @@ _program_commandLine_helpMessage()
 }
 ```
 
+Let's check out our new help: `./overdrive --help`.
+
 Now, we're repeating our self with the default value for the output path - once in `_program_commandLine_helpMessage()`, once in `_program_commandLine_validate()`. It's also a dynamic value. In a normal shell script, we might put that in a global value. But because of the way [shellfire] works, that's a bad idea (as it is in most normal programs). It'll be lost when the program's fattened, as all expression outside of functions aren't preserved ordinarily. And even if it wasn't, it'd be the value on the development machine. Instead, let's use an initialisation function:-
 
 ```bash
+# Place this above _program_commandLine_helpMessage()
 _program_commandLine_parseInitialise()
 {
 	overdrive_outputPath_default="$(pwd)"
 }
 
-_program_commandLine_validate()
-{
-	if core_variable_isSet overdrive_outputPath; then
-		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'configuration setting' 'overdrive_outputPath' "$overdrive_outputPath"
-	else
-		core_message INFO "Defaulting --output-path to current working directory"
-		overdrive_outputPath="$overdrive_outputPath_default"
-	fi
-}
-
+# Replace _program_commandLine_helpMessage() with
 _program_commandLine_helpMessage()
 {
 	_program_commandLine_helpMessage_usage="[OPTION]... -- [JSON GEAR BOX FILE]..."
@@ -396,7 +402,7 @@ _program_commandLine_helpMessage()
 	_program_commandLine_helpMessage_options="
   -s, --output-path PATH      PATH to output to.
                               Defaults to current working directory:-
-                              $overdrive_outputPath_default
+                              $overdrive_outputPath_default"
     _program_commandLine_helpMessage_optionsSpacing='     '
 	_program_commandLine_helpMessage_configurationKeys="
   swaddle_outputPath     Equivalent to --output-path
@@ -405,10 +411,29 @@ _program_commandLine_helpMessage()
   ${_program_name} -o /some/path -- some-json-gear-box-file.json
 "
 }
+
+# Replace _program_commandLine_validate() with
+_program_commandLine_validate()
+{
+	if core_variable_isSet overdrive_outputPath; then
+		core_validate_folderPathIsReadableAndSearchableAndWritableOrCanBeCreated $core_commandLine_exitCode_CONFIG 'configuration setting' 'overdrive_outputPath' "$overdrive_outputPath"
+	else
+		core_message INFO "Defaulting --output-path to current working directory"
+		overdrive_outputPath="$overdrive_outputPath_default"
+	fi
+}
+```
+
+Let's check out our new help: `./overdrive --help`. To make use of the configuration, you could create a file at, say, `$HOME/.overdrive/rc`:-
+
+```bash
+overdrive_outputPath="~/overdrive-output"
 ```
 
 Now we might want to be able to force the output to overwrite files. Let's add a `--force` long option, with `-f` for short hand, with the last function the parser uses, `core_commandLine_processOptionWithoutArgument`:-
+
 ```bash
+# Replace _program_commandLine_optionExists() with
 _program_commandLine_optionExists()
 {
 	case "$optionName" in
@@ -428,8 +453,8 @@ _program_commandLine_optionExists()
 	esac
 }
 
-
-core_commandLine_processOptionWithoutArgument()
+# Place this below _program_commandLine_optionExists()
+_program_commandLine_processOptionWithoutArgument()
 {
 	case "$optionName" in
 		
@@ -438,6 +463,23 @@ core_commandLine_processOptionWithoutArgument()
 		;;
 		
 	esac
+}
+
+# Replace _program_commandLine_validate() with
+_program_commandLine_validate()
+{
+	if core_variable_isSet overdrive_outputPath; then
+		core_validate_folderPathIsReadableAndSearchableAndWritableOrCanBeCreated $core_commandLine_exitCode_CONFIG 'configuration setting' 'overdrive_outputPath' "$overdrive_outputPath"
+	else
+		core_message INFO "Defaulting --output-path to current working directory"
+		overdrive_outputPath="$overdrive_outputPath_default"
+	fi
+
+	if core_variable_isSet overdrive_force; then
+		core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'configuration setting' 'overdrive_force' "$overdrive_force"
+	else
+		overdrive_force='no'
+	fi
 }
 ```
 
@@ -460,6 +502,7 @@ _program()
 Let's replace that with something more useful. Let's start by importing the namespaces we need:-
 
 ```bash
+# Replace _program() with
 _program()
 {
 	core_usesIn jsonreader
@@ -477,6 +520,11 @@ We don't import `unicode`, even though `jsonreader` depends on it - it has a `co
 Now, what's our program going to do? It's going to loop over each JSON file, and write each to a XML file. We need to create the output path, check if the XML files exist, and only overwrite if `--force` is specified. Let's write a loop in `overdrive()`:-
 
 ```bash
+# Replace _program() with
+_program()
+{
+	core_usesIn jsonreader
+	core_usesIn xmlwriter
 	
 	# document dependency
 	core_dependency_requires '*' mkdir
@@ -485,11 +533,15 @@ Now, what's our program going to do? It's going to loop over each JSON file, and
 		mkdir -m 0755 -p "$overdrive_outputPath"
 		core_variable_array_iterate overdrive_jsonGearBoxFiles overdrive_convertJsonFileToXml
 	}
+}
 ```
 
 `overdrive_convertJsonFileToXml` is a callback that'll be passed each JSON file path. It's the name of a function we'll define (very few people seem to know that callbacks are both easy and powerful in shell script). Now, we could write this in our [shellfire] application:-
 
 ```bash
+# Replace _program() with
+_program()
+{
 	core_dependency_requires '*' mkdir
 	overdrive()
 	{
@@ -499,8 +551,9 @@ Now, what's our program going to do? It's going to loop over each JSON file, and
 	
 	overdrive_convertJsonFileToXml()
 	{
-		…
+		:
 	}
+}
 ```
 
 But it's getting to get large, quickly. We should use a module. Let's create a private one for ourselves. Create the file `overdrive/lib/shellfire/overdrive/overdrive.functions`, and put the logic in there:-
@@ -510,25 +563,30 @@ core_usesIn jsonreader
 core_usesIn xmlwriter
 overdrive_convertJsonFileToXml()
 {
-	…
+	:
 }
 ```
 
 Now, let's import the module like any other:-
 
 ```bash
-core_usesIn overdrive
-core_dependency_requires '*' mkdir
-overdrive()
+# Replace _program() with
+_program()
 {
-	mkdir -m 0755 -p "$overdrive_outputPath"
-	core_variable_array_iterate overdrive_jsonGearBoxFiles overdrive_convertJsonFileToXml
+	core_usesIn overdrive
+	core_dependency_requires '*' mkdir
+	overdrive()
+	{
+		mkdir -m 0755 -p "$overdrive_outputPath"
+		core_variable_array_iterate overdrive_jsonGearBoxFiles overdrive_convertJsonFileToXml
+	}
 }
 ```
 
-Right, let's add some logic to `overdrive_convertJsonFileToXml()`:-
+Right, let's add some logic to `overdrive_convertJsonFileToXml()` in `overdrive/lib/shellfire/overdrive/overdrive.functions`:-
 
 ```bash
+# Replace overdrive_convertJsonFileToXml() with
 overdrive_convertJsonFileToXml()
 {
 	# core_variable_array_element is set by core_variable_array_iterate
@@ -537,7 +595,7 @@ overdrive_convertJsonFileToXml()
 	local jsonGearBoxFileName="$(core_compatibility_basename "$jsonGearBoxFilePath")"
 	# Of course, you could use the file program
 	local extension='.json'
-	if ! core_variable_endsWith "$extension"; then
+	if ! core_variable_endsWith "$jsonGearBoxFileName" "$extension"; then
 		core_exitError $core_commandLine_exitCode_DATAERR "The JSON gear box file '$jsonGearBoxFilePath' doesn't end in '.json'"
 	fi
 	
@@ -566,6 +624,7 @@ overdrive_convertJsonFileToXml()
 Let's write that conversion code:-
 
 ```bash
+# Place below overdrive_convertJsonFileToXml()
 overdrive_convertJsonFileToXml_callback()
 {
 	case "$eventKind" in
@@ -628,7 +687,33 @@ overdrive_convertJsonFileToXml_callback()
 }
 ```
 
-That's it. Not hard, was it, really?
+Now, let's try it out. Copy this JSON to `overdrive/gearbox.json:-
+
+```bash
+{
+	"hello": "world",
+	"array":
+	[
+		-0.5e+6,
+		true,
+		null,
+		false,
+		"something",
+		{
+			"nested": "value"
+		}
+	],
+	"number": 50,
+	"boolean": true
+}
+```
+
+Let's convert the data: `./overdrive --output-path ~/output-path -- ./gearbox.json`. Take a look at `~/output-path/gearbox.xml`. Right, now, let's try again: `./overdrive --output-path ~/output-path -- ./gearbox.json`. Good, our logic stops an overwrite. Specify `-f` and try again: `./overdrive --output-path ~/output-path -f -- ./gearbox.json`.
+
+### [fatten]ing
+
+TO DO.
+
 
 [shellfire]: https://github.com/shellfire-dev "shellfire homepage"
 [fatten]: https://github.com/shellfire-dev/fatten "fatten homepage"
