@@ -1,10 +1,13 @@
 #!/usr/bin/env sh
 
 _program()
-{	
+{
+	core_usesIn overdrive
+	core_dependency_requires '*' mkdir
 	overdrive()
 	{
-		echo "Hello World"
+		mkdir -m 0755 -p "$overdrive_outputPath"
+		core_variable_array_iterate overdrive_jsonGearBoxFiles overdrive_convertJsonFileToXml
 	}
 }
 
@@ -20,6 +23,94 @@ _program_etcPath="${_program_path}/etc"
 _program_varPath="${_program_path}/var"
 _program_entrypoint='overdrive'
 
+_program_commandLine_parseInitialise()
+{
+	overdrive_outputPath_default="$(pwd)"
+}
+
+_program_commandLine_helpMessage()
+{
+	_program_commandLine_helpMessage_usage="[OPTION]... -- [JSON GEAR BOX FILE]..."
+	_program_commandLine_helpMessage_description="Turns JSON into XML."
+	_program_commandLine_helpMessage_options="
+  -s, --output-path PATH      PATH to output to.
+                              Defaults to current working directory:-
+                              $overdrive_outputPath_default
+    _program_commandLine_helpMessage_optionsSpacing='     '
+	_program_commandLine_helpMessage_configurationKeys="
+  swaddle_outputPath     Equivalent to --output-path
+"
+	_program_commandLine_helpMessage_examples="
+  ${_program_name} -o /some/path -- some-json-gear-box-file.json
+"
+}
+
+_program_commandLine_optionExists()
+{
+	case "$optionName" in
+	
+		o|output-path)
+			echo 'yes-argumented'
+		;;
+	
+		f|force)
+			echo 'yes-argumentless'
+		;;
+		
+		*)
+			echo 'no'
+		;;
+	
+	esac
+}
+
+core_commandLine_processOptionWithoutArgument()
+{
+	case "$optionName" in
+		
+		f|force)
+			overdrive_force='yes'
+		;;
+		
+	esac
+}
+
+_program_commandLine_processOptionWithArgument()
+{
+	case "$optionName" in
+	
+		o|output-path)
+			core_validate_folderPathIsReadableAndSearchableAndWritableOrCanBeCreated $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			overdrive_outputPath="$optionValue"
+		;;
+	
+	esac
+}
+
+_program_commandLine_handleNonOptions()
+{
+	core_variable_array_initialise overdrive_jsonGearBoxFiles
+	
+	local jsonGearBoxFile
+	for jsonGearBoxFile in "$@"
+	do
+		core_variable_array_append overdrive_jsonGearBoxFiles "$jsonGearBoxFile"
+	done
+	
+	if core_variable_array_isEmpty overdrive_jsonGearBoxFiles; then
+		core_exitError $core_commandLine_exitCode_USAGE "You haven't specified any JSON gear box files - are you sure this is what you wanted?"
+	fi
+}
+
+_program_commandLine_validate()
+{
+	if core_variable_isSet overdrive_outputPath; then
+		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'configuration setting' 'overdrive_outputPath' "$overdrive_outputPath"
+	else
+		core_message INFO "Defaulting --output-path to current working directory"
+		overdrive_outputPath="$overdrive_outputPath_default"
+	fi
+}
 
 # Assumes pwd, and so requires this code to be running from this folder
 . "$_program_libPath"/shellfire/core/init.functions "$@"

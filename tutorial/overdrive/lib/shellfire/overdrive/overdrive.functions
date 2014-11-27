@@ -1,0 +1,95 @@
+core_usesIn jsonreader
+core_usesIn xmlwriter
+overdrive_convertJsonFileToXml()
+{
+	# core_variable_array_element is set by core_variable_array_iterate
+	local jsonGearBoxFilePath="$core_variable_array_element"
+	
+	local jsonGearBoxFileName="$(core_compatibility_basename "$jsonGearBoxFilePath")"
+	# Of course, you could use the file program
+	local extension='.json'
+	if ! core_variable_endsWith "$extension"; then
+		core_exitError $core_commandLine_exitCode_DATAERR "The JSON gear box file '$jsonGearBoxFilePath' doesn't end in '.json'"
+	fi
+	
+	# Strip .json
+	local gearBoxFileNameWithoutExtension="$(core_variable_allButLastN "$jsonGearBoxFileName" ${#extension})"
+	
+	local xmlOutputFilePath="$overdrive_outputPath"/"$gearBoxFileNameWithoutExtension".xml
+	
+	# Don't overwrite
+	if [ -e "$xmlOutputFilePath" ]; then
+		if core_variable_isFalse "$overdrive_force"; then
+			core_message WARN "Skipping conversion of '$jsonGearBoxFileName' to XML as output file already exists"
+		fi
+		return 0
+	fi
+	
+	{
+		xmlwriter_declaration '1.0' 'UTF-8' 'no'
+		xmlwriter_open JsonGearBox creator overdrive
+			jsonreader_parse "$jsonGearBoxFilePath" overdrive_convertJsonFileToXml_callback
+		xmlwriter_close JsonGearBox
+	} >"$xmlOutputFilePath"
+}
+
+overdrive_convertJsonFileToXml_callback()
+{
+	case "$eventKind" in
+	
+		root)
+			xmlwriter_leaf value type "$eventVariant" "$eventValue"
+		;;
+		
+		object)
+			
+			case "$eventVariant" in
+				
+				start)
+					if [ "$eventValue" = 'object' ]; then
+						xmlwriter_open object key "$eventKey" index "$eventIndex"
+					else
+						xmlwriter_open object index "$eventIndex"
+					fi
+				;;
+				
+				boolean|number|string)
+					# eg <value key="hello" type="boolean">true</value>
+					xmlwriter_leaf value key "$eventKey" index "$eventIndex" type "$eventVariant" "$eventValue"
+				;;
+				
+				end)
+					xmlwriter_close object
+				;;
+				
+			esac
+			
+		;;
+		
+		array)
+			
+			case "$eventVariant" in
+				
+				start)
+					if [ "$eventValue" = 'object' ]; then
+						xmlwriter_open array key "$eventKey" index "$eventIndex"
+					else
+						xmlwriter_open array index "$eventIndex"
+					fi
+				;;
+				
+				boolean|number|string)
+					# eg <value type="boolean">true</value>
+					xmlwriter_leaf value index "$eventIndex" type "$eventVariant" "$eventValue"
+				;;
+				
+				end)
+					xmlwriter_close array
+				;;
+				
+			esac
+			
+		;;
+		
+	esac
+}
