@@ -565,26 +565,34 @@ overdrive_convertJsonFileToXml()
 
 Let's write that conversion code:-
 
-
-XXXX   write the keys, too...
-
-
-
 ```bash
 overdrive_convertJsonFileToXml_callback()
 {
 	case "$eventKind" in
+	
+		root)
+			xmlwriter_leaf value type "$eventVariant" "$eventValue"
+		;;
 		
 		object)
 			
 			case "$eventVariant" in
 				
-				start
-					
+				start)
+					if [ "$eventValue" = 'object' ]; then
+						xmlwriter_open object key "$eventKey" index "$eventIndex"
+					else
+						xmlwriter_open object index "$eventIndex"
+					fi
 				;;
 				
-				end
+				boolean|number|string)
+					# eg <value key="hello" type="boolean">true</value>
+					xmlwriter_leaf value key "$eventKey" index "$eventIndex" type "$eventVariant" "$eventValue"
+				;;
 				
+				end)
+					xmlwriter_close object
 				;;
 				
 			esac
@@ -595,42 +603,23 @@ overdrive_convertJsonFileToXml_callback()
 			
 			case "$eventVariant" in
 				
-				start
-					
+				start)
+					if [ "$eventValue" = 'object' ]; then
+						xmlwriter_open array key "$eventKey" index "$eventIndex"
+					else
+						xmlwriter_open array index "$eventIndex"
+					fi
 				;;
 				
-				end
-				
+				boolean|number|string)
+					# eg <value type="boolean">true</value>
+					xmlwriter_leaf value index "$eventIndex" type "$eventVariant" "$eventValue"
 				;;
 				
-			esac
-			
-		;;
-		
-		value)
-			
-			case "$eventVariant" in
-			
-				null)
-					xmlwriter_leaf null
+				end)
+					xmlwriter_close array
 				;;
 				
-				true)
-					xmlwriter_leaf true
-				;;
-				
-				false)
-					xmlwriter_leaf false
-				;;
-				
-				number)
-					xmlwriter_leaf number "$eventValue"
-				;;
-				
-				string)
-					xmlwriter_leaf string "$eventValue"
-				;;
-			
 			esac
 			
 		;;
@@ -639,6 +628,7 @@ overdrive_convertJsonFileToXml_callback()
 }
 ```
 
+That's it. Not hard, was it, really?
 
 [shellfire]: https://github.com/shellfire-dev "shellfire homepage"
 [fatten]: https://github.com/shellfire-dev/fatten "fatten homepage"
