@@ -8,7 +8,7 @@ overdrive_convertJsonFileToXml()
 	local jsonGearBoxFileName="$(core_compatibility_basename "$jsonGearBoxFilePath")"
 	# Of course, you could use the file program
 	local extension='.json'
-	if ! core_variable_endsWith "$extension"; then
+	if ! core_variable_endsWith "$jsonGearBoxFileName" "$extension"; then
 		core_exitError $core_commandLine_exitCode_DATAERR "The JSON gear box file '$jsonGearBoxFilePath' doesn't end in '.json'"
 	fi
 	

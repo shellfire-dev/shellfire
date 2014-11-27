@@ -35,7 +35,7 @@ _program_commandLine_helpMessage()
 	_program_commandLine_helpMessage_options="
   -s, --output-path PATH      PATH to output to.
                               Defaults to current working directory:-
-                              $overdrive_outputPath_default
+                              $overdrive_outputPath_default"
     _program_commandLine_helpMessage_optionsSpacing='     '
 	_program_commandLine_helpMessage_configurationKeys="
   swaddle_outputPath     Equivalent to --output-path
@@ -64,7 +64,7 @@ _program_commandLine_optionExists()
 	esac
 }
 
-core_commandLine_processOptionWithoutArgument()
+_program_commandLine_processOptionWithoutArgument()
 {
 	case "$optionName" in
 		
@@ -105,10 +105,16 @@ _program_commandLine_handleNonOptions()
 _program_commandLine_validate()
 {
 	if core_variable_isSet overdrive_outputPath; then
-		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'configuration setting' 'overdrive_outputPath' "$overdrive_outputPath"
+		core_validate_folderPathIsReadableAndSearchableAndWritableOrCanBeCreated $core_commandLine_exitCode_CONFIG 'configuration setting' 'overdrive_outputPath' "$overdrive_outputPath"
 	else
 		core_message INFO "Defaulting --output-path to current working directory"
 		overdrive_outputPath="$overdrive_outputPath_default"
+	fi
+
+	if core_variable_isSet overdrive_force; then
+		core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'configuration setting' 'overdrive_force' "$overdrive_force"
+	else
+		overdrive_force='no'
 	fi
 }
 
