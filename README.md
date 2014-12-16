@@ -45,7 +45,7 @@ Code is known to run well on:-
 * AIX
 * Solaris
 
-We plan to support major distributions whilst there owners support them, as long as we can access without cost to the underlying technologies. We have limited interest in supporting obscure, dying or dead commercial platforms (eg HP-UX, Tru64). Please just go away and stop raping your customers. Thank you.
+We plan to support major distributions whilst there owners support them, as long as we can access without cost to the underlying technologies. We have limited interest in supporting obscure, dying or dead commercial platforms (eg HP-UX, Tru64).
 
 We work well on POSIX shells that support a `local` keyword or alias:-
 
