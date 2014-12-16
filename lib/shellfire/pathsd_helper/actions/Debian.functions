@@ -135,7 +135,7 @@ pathsd_helper_actions_Debian_operate()
 	local lineCount
 	local packageName
 	local firstPackageName
-	for pathPrefix in 'usr/bin' 'usr/sbin' 'bin' 'sbin'
+	for pathPrefix in 'bin' 'sbin' 'usr/bin' 'usr/sbin'
 	do
 		absolutePath=/"${pathPrefix}"/"${programName}"
 		# Irritaingly, apt-file does not use a non-zero exit code for no matches; it returns a blank line for no matches; it outputs a trailing blank line if there are matches
