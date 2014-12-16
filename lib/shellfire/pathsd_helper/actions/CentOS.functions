@@ -4,10 +4,10 @@ pathsd_helper_actions_CentOS_start()
 	if [ $(core_init_verbosity) -gt 0 ]; then
 		pathsd_helper_actions_CentOS_yumVerbosity=""
 	else
-		pathsd_helper_actions_CentOS_yumVerbosity=" --quiet"
+		pathsd_helper_actions_CentOS_yumVerbosity="--quiet"
 	fi
 	
-	sudo -p "Please enter your password for sudo to update yum: " yum${pathsd_helper_actions_CentOS_yumVerbosity} makecache
+	sudo -p "Please enter your password for sudo to update yum: " yum ${pathsd_helper_actions_CentOS_yumVerbosity} makecache
 }
 
 core_dependency_requires 'CentOS' repoquery
