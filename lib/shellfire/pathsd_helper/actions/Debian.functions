@@ -45,20 +45,26 @@ pathsd_helper_actions_Debian_start()
 
 pathsd_helper_actions_Debian_operate()
 {
+	set -x
 	local pathPrefix
 	local absolutePath
 	local lineCount
 	local packageName
-	for pathPrefix in 'bin' 'sbin' 'usr/bin' 'usr/sbin'
+	local firstPackageName
+	for pathPrefix in 'usr/bin' 'usr/sbin' 'bin' 'sbin'
 	do
 		absolutePath=/"${pathPrefix}"/"${programName}"
-		# Irritaingly, apt-file does not use a non-zero exit code for no matches
+		# Irritaingly, apt-file does not use a non-zero exit code for no matches; it returns a blank line for no matches; it outputs a trailing blank line if there are matches
 		apt-file --non-interactive --package-only --regexp search "^${absolutePath}$" >"$_pathsd_helper_actions_Debian_tmpFilePath"
 		lineCount=0
 		packageName=''
+		firstPackageName=''
 		while IFS='' read -r packageName
 		do
 			lineCount=$((lineCount+1))
+			if [ $lineCount -eq 1 ]; then
+				firstPackageName="$packageName"
+			fi
 		done <"$_pathsd_helper_actions_Debian_tmpFilePath"
 		
 		case $lineCount in
@@ -69,7 +75,7 @@ pathsd_helper_actions_Debian_operate()
 			
 			1)
 				# Irritaingly, apt-file returns a blank line for no matches
-				if [ -z "$packageName" ]; then
+				if [ -z "$firstPackageName" ]; then
 					continue
 				fi
 				
@@ -86,6 +92,7 @@ pathsd_helper_actions_Debian_operate()
 	done
 	
 	core_message WARN "No packages found for progam '$programName'"
+	set +x
 }
 
 pathsd_helper_actions_Debian_finish()
