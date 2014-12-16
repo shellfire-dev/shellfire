@@ -1,0 +1,60 @@
+pathsd_helper_execute_setDependencyPath()
+{
+	pathsd_helper_execute_parentPath="$pathsd_helper_pathsdPath"/etc/"$core_libraryName"/paths.d
+	pathsd_helper_execute_dependencyPath="$pathsd_helper_execute_parentPath"/"$pathsd_helper_dependencyCheck"
+}
+
+pathsd_helper_execute_guardDependencyPath()
+{
+	if ! core_path_isReadableAndSearchableFolderPath "$pathsd_helper_execute_dependencyPath"; then
+		core_exit $core_commandLine_exitCode_CONFIG "The combination of --dependency-check and --pathsd-path ('$pathsd_helper_execute_dependencyPath') is not an extant, readable and searchable directory"
+	fi
+}
+
+pathsd_helper_execute_setExtractFunction()
+{
+	_pathsd_helper_execute_dependencyCheckFunction="core_dependency_check_${pathsd_helper_dependencyCheck}_extractUnqualifiedPackageName"
+}
+
+pathsd_helper_execute_actions()
+{
+	local action
+	for action in "$@"
+	do
+		pathsd_helper_actions_${action}_start
+		pathsd_helper_execute_iterateOverPathFiles
+		pathsd_helper_actions_${action}_finish
+	done
+}
+
+pathsd_helper_execute_iterateOverPathFiles()
+{
+	local pathFile
+	local programName
+	# eg including potential Homebrew tap
+	local fullyQualifiedPackageName
+	local binaryPath
+	local unqualifiedPackageName
+	
+	pushd "$pathsd_helper_execute_dependencyPath"
+		set +f
+		for pathFile in *.path
+		do
+			set -f
+			if [ ! -f "$pathFile" ]; then
+				continue
+			fi
+		
+			IFS=' ' read -r programName fullyQualifiedPackageName binaryPath <"$pathFile"
+			unqualifiedPackageName="$(${_pathsd_helper_execute_dependencyCheckFunction} "$fullyQualifiedPackageName")"
+		
+			if [ "$programName".path != "$pathFile" ]; then
+				core_message WARN "Path file '$pathFile' has a mismatched program name ('$programName')"
+				continue
+			fi
+			
+			pathsd_helper_actions_${action}_operate
+		done
+		set -f
+	popd
+}

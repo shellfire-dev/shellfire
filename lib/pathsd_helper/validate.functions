@@ -1,0 +1,30 @@
+pathsd_helper_validate_dependencyCheck()
+{
+	local code=$1
+	local category="$2"
+	local name="$3"
+	local value="$4"
+	
+	local functionThatMustExist="core_dependency_check_${value}_extractUnqualifiedPackageName"
+	
+	if core_functions_exists "$functionThatMustExist"; then
+		return 0
+	fi
+	
+	core_validate_exit "The $category '$name' specifies a dependency '$value' which isn't supported"
+}
+
+pathsd_helper_validate_pathsdPath()
+{
+	core_validate_folderPathReadableAndSearchable "$@"
+
+	local code=$1
+	local category="$2"
+	local name="$3"
+	local value="$4"
+	
+	if core_path_isReadableAndSearchableFolderPath "$value"/etc/"$core_libraryName"/paths.d; then
+		return 0
+	fi
+	core_validate_exit "The $category '$name' specifies a path '$value' which does not have 'etc/$core_libraryName/paths.d' accessible (as an extant, readable and searchable directory)"
+}

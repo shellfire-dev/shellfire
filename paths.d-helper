@@ -1,0 +1,110 @@
+#!/usr/bin/env sh
+
+_program()
+{
+	core_usesIn pathsd_helper validate execute
+	core_usesIn pathsd_helper/actions Debian
+	
+	pathsd_helper_entrypoint()
+	{
+		pathsd_helper_execute_setDependencyPath
+		pathsd_helper_execute_guardDependencyPath
+		pathsd_helper_execute_setExtractFunction
+		pathsd_helper_execute_actions Debian
+	}
+}
+
+_program_name='paths.d-helper'
+_program_namespace='pathsd_helper'
+_program_version='unversioned'
+_program_package_or_build=''
+_program_copyright='(c) 2014 Raphael Cohn'
+_program_licence='MIT'
+_program_written_by='Raphael Cohn'
+_program_path="$([ "${_program_fattening_program_path+set}" = 'set' ] && printf '%s\n' "$_program_fattening_program_path" || ([ "${0%/*}" = "${0}" ] && printf '%s\n' '.' || printf '%s\n' "${0%/*}"))"
+_program_libPath="${_program_path}/lib"
+_program_etcPath="${_program_path}/etc"
+_program_entrypoint='pathsd_helper_entrypoint'
+
+_program_commandLine_parseInitialise()
+{
+	pathsd_helper_dependencyCheck_default='Homebrew'
+	pathsd_helper_pathsdPath_default="$(pwd)"
+}
+
+_program_commandLine_helpMessage()
+{
+	_program_commandLine_helpMessage_usage="[OPTION]..."
+	_program_commandLine_helpMessage_description="Produces a list of packages for a dependency check in paths.d"
+	_program_commandLine_helpMessage_options="
+  -d, --dependency-check DEP  Dependency check DEP, eg Debian.
+                              Defaults to '$pathsd_helper_dependencyCheck_default'.
+  -p, --pathsd-path PATH      PATH parenting 'etc/$core_libraryName/paths.d'
+                              Defaults to current working directory:-
+                              $pathsd_helper_pathsdPath_default"
+    _program_commandLine_helpMessage_optionsSpacing='     '
+	_program_commandLine_helpMessage_configurationKeys="
+  pathsd_helper_dependencyCheck  Equivalent to --dependency-check
+  pathsd_helper_pathsdPath       Equivalent to --pathsd-path
+"
+	_program_commandLine_helpMessage_examples="
+  ${_program_name} -d Debian
+"
+}
+
+_program_commandLine_optionExists()
+{
+	case "$optionName" in
+	
+		d|dependency-check)
+			echo 'yes-argumented'
+		;;
+	
+		p|pathsd-path)
+			echo 'yes-argumented'
+		;;
+		
+		*)
+			echo 'no'
+		;;
+	
+	esac
+}
+
+_program_commandLine_processOptionWithArgument()
+{
+	case "$optionName" in
+	
+		d|dependency-check)
+			pathsd_helper_validate_dependencyCheck $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			pathsd_helper_dependencyCheck="$optionValue"
+		;;
+	
+		p|pathsd-path)
+			pathsd_helper_validate_pathsdPath $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			pathsd_helper_pathsdPath="$optionValue"
+		;;
+	
+	esac
+}
+
+_program_commandLine_validate()
+{
+	if core_variable_isSet pathsd_helper_dependencyCheck; then
+		pathsd_helper_validate_dependencyCheck $core_commandLine_exitCode_CONFIG 'configuration setting' 'pathsd_helper_dependencyCheck' "$pathsd_helper_dependencyCheck"
+	else
+		core_message INFO "Defaulting --dependency-check to '$pathsd_helper_dependencyCheck_default'"
+		pathsd_helper_dependencyCheck="$pathsd_helper_dependencyCheck_default"
+		pathsd_helper_validate_dependencyCheck $core_commandLine_exitCode_CONFIG 'default' 'pathsd_helper_dependencyCheck' "$pathsd_helper_dependencyCheck"
+	fi
+
+	if core_variable_isSet pathsd_helper_pathsdPath; then
+		pathsd_helper_validate_pathsdPath $core_commandLine_exitCode_CONFIG 'configuration setting' 'pathsd_helper_pathsdPath' "$pathsd_helper_pathsdPath"
+	else
+		core_message INFO "Defaulting --paths-path to '$pathsd_helper_pathsdPath_default'"
+		pathsd_helper_pathsdPath="$pathsd_helper_pathsdPath_default"
+		pathsd_helper_validate_pathsdPath $core_commandLine_exitCode_CONFIG 'default' 'pathsd_helper_pathsdPath' "$pathsd_helper_pathsdPath"
+	fi
+}
+
+. "$_program_libPath"/shellfire/core/init.functions "$@"
