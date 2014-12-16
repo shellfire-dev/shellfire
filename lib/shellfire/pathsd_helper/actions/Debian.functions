@@ -43,8 +43,86 @@ pathsd_helper_actions_Debian_start()
 	fi
 }
 
+_pathsd_helper_actions_Debian_writePathFileOverride()
+{
+	local fullyQualfiedPackageName="$1"
+	core_message INFO "Using alternative package '$fullyQualfiedPackageName' for program '$programName'"
+	if [ $# -eq 2 ]; then
+		local path="$2"
+	else
+		local path="/usr/bin/${programName}"
+	fi
+	_pathsd_helper_actions_Debian_writePathFile "$programName" "$fullyQualfiedPackageName" "$path"
+}
+
+_pathsd_helper_actions_Debian_writePathFile()
+{
+	local programName="$1"
+	local fullyQualfiedPackageName="$2"
+	local absolutePath="$3"
+	printf '%s %s %s\n' "$programName" "$fullyQualfiedPackageName" "$absolutePath" >"$_pathsd_helper_actions_Debian_outputPath"/"$programName".path
+}
+
 pathsd_helper_actions_Debian_operate()
 {
+	case "$programName" in
+		
+		awk)
+			_pathsd_helper_actions_Debian_writePathFileOverride 'gawk' '/usr/bin/gawk'
+			return 0
+		;;
+		
+		brew|brew-rmtree)
+			core_message INFO "Ignoring program '$programName'"
+			return 0
+		;;
+		
+		'c++filt')
+			_pathsd_helper_actions_Debian_writePathFileOverride 'binutils'
+			return 0
+		;;
+		
+		addr2line|ar|nm|objcopy|objdump|ranlib|readelf|size|strings|strip)
+			_pathsd_helper_actions_Debian_writePathFileOverride 'binutils-multiarch'
+			return 0
+		;;
+		
+		uptime)
+			_pathsd_helper_actions_Debian_writePathFileOverride 'procps'
+			return 0
+		;;
+		
+		# Note, not fakeroot-ng, which needs porting to Mac OS X Homebrew
+		fakeroot)
+			_pathsd_helper_actions_Debian_writePathFileOverride 'fakeroot' '/usr/bin/fakeroot-sysv'
+			return 0
+		;;
+		
+		zcat|zcmp|zdiff|zegrep|zfgrep|zgrep)
+			_pathsd_helper_actions_Debian_writePathFileOverride 'gzip' "/bin/${programName}"
+			return 0
+		;;
+		
+		lzcat|lzcmp|lzdiff|lzegrep|lzfgrep|lzgrep|lzless|lzma|lzmore|unlzma)
+			_pathsd_helper_actions_Debian_writePathFileOverride 'xz-utils'
+			return 0
+		;;
+		
+		# Also unrar-free
+		unrar)
+			_pathsd_helper_actions_Debian_writePathFileOverride 'unrar'
+			return 0
+		;;
+		
+		# Ubuntu doesn't install these symlinks that chanhge pbzip2's behaviour; we fake them as we create a false path full of symlinks.
+		pbunzip2|pbzcat)
+			_pathsd_helper_actions_Debian_writePathFileOverride 'pbzip2' "/usr/bin/pbzip2"
+			return 0
+		;;
+		
+	esac
+	
+	
 	local pathPrefix
 	local absolutePath
 	local lineCount
@@ -78,12 +156,12 @@ pathsd_helper_actions_Debian_operate()
 					continue
 				fi
 				
-				printf '%s %s %s\n' "$programName" "$firstPackageName" "$absolutePath" >"$_pathsd_helper_actions_Debian_outputPath"/"$programName".path
+				_pathsd_helper_actions_Debian_writePathFile "$programName" "$firstPackageName" "$absolutePath"
 				return 0
 			;;
 			
 			2)
-				core_message WARN "Too many packages found for progam '$programName' for path '$absolutePath' using apt-file --package-only --regexp search '^${absolutePath}$'"
+				core_message WARN "Too many packages found for progam '$programName' for path '$absolutePath' using apt-file --non-interactive --package-only --regexp search '^${absolutePath}$'"
 				return 0
 			;;
 			
