@@ -13,6 +13,9 @@
 
 [shellfire] has been open sourced and enhanced from code previously used in-house by [stormmq](http://stormmq.com/) and [KisanHub](http://www.kisanhub.com/). The lead developer is [Raph Cohn](https://github.com/raphaelcohn). It's licensed under the MIT Licence.
 
+## Getting Started: Is there a tutorial?
+Yes. Try the [overdrive tutorial](https://github.com/shellfire-dev/shellfire/tree/master/tutorial). You'll be up and running your first [shellfire] application in 10 mins.
+
 ## Why?
 Because the shell matters, as shellshock showed us. Because the shell is powerful, but is a poorly understood programming language. And it needs proper constructs. And lastly, because we're fed up with having to install half an universe's worth of Ruby, Python and Perl to bootstrap our servers or run CI jobs\*. We like Rob Landley's Aboriginal Linux. And if we want to build our own bespoke, single purpose servers, managed switches and embedded routers post-Snowden, less is more.
 
@@ -97,9 +100,8 @@ Additionally, there's also
 * [fatten], to make standalone shell scripts
 * [paths.d], which contains common locations and package names for different package managers. Used by [core]'s dependency framework as a source of information on where to find programs.
 
-## Getting Started: Is there a tutorial?
-Yes, [here](https://github.com/shellfire-dev/shellfire/tree/master/tutorial). You'll be up and running your first [shellfire] application in 10 mins.
-
+## Ready to get stated?
+Follow the [tutorial](https://github.com/shellfire-dev/shellfire/tree/master/tutorial) and you'll be up and running your first [shellfire] application in 10 mins.
 
 [shellfire]: https://github.com/shellfire-dev "shellfire homepage"
 [fatten]: https://github.com/shellfire-dev/fatten "fatten homepage"
