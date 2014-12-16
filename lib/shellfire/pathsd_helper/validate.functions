@@ -23,8 +23,7 @@ pathsd_helper_validate_pathsdPath()
 	local name="$3"
 	local value="$4"
 	
-	if core_path_isReadableAndSearchableFolderPath "$value"/etc/"$core_libraryName"/paths.d; then
-		return 0
+	if [ "$(core_compatibility_basename "$value")" != 'paths.d' ]; then
+		core_validate_exit "The $category '$name' specifies a path '$value' which doesn't have a leaf folder called 'paths.d'"
 	fi
-	core_validate_exit "The $category '$name' specifies a path '$value' which does not have 'etc/$core_libraryName/paths.d' accessible (as an extant, readable and searchable directory)"
 }

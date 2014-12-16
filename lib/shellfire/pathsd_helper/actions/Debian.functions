@@ -10,7 +10,7 @@ pathsd_helper_actions_Debian_start()
 		_pathsd_helper_actions_Debian_tmpFilePath="$TMP_FILE"
 	fi
 	
-	_pathsd_helper_actions_Debian_outputPath="$pathsd_helper_execute_parentPath"/Debian
+	_pathsd_helper_actions_Debian_outputPath="$pathsd_helper_pathsdPath"/Debian
 	if [ ! -d "$_pathsd_helper_actions_Debian_outputPath" ]; then
 		mkdir -m 0755 -p "$_pathsd_helper_actions_Debian_outputPath" || core_exitError $core_commandLine_exitCode_CANTCREAT "Can't create folder '$_pathsd_helper_actions_Debian_outputPath'"
 	fi

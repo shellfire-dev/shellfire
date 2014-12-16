@@ -1,7 +1,6 @@
 pathsd_helper_execute_setDependencyPath()
 {
-	pathsd_helper_execute_parentPath="$pathsd_helper_pathsdPath"/etc/"$core_libraryName"/paths.d
-	pathsd_helper_execute_dependencyPath="$pathsd_helper_execute_parentPath"/"$pathsd_helper_dependencyCheck"
+	pathsd_helper_execute_dependencyPath="$pathsd_helper_pathsdPath"/"$pathsd_helper_dependencyCheck"
 }
 
 pathsd_helper_execute_guardDependencyPath()
