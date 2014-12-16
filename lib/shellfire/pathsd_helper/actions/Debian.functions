@@ -1,8 +1,35 @@
 core_dependency_requires 'Debian' apt-file
 pathsd_helper_actions_Debian_start()
 {
-	core_message NOTICE "Updating apt-file cache, may be quite slow"
-	apt-file update
+	set +f
+	set -- ~/.cache/apt-file/*
+	set -f
+	
+	local updateAptFileCache
+	case $# in
+		
+		0)
+			updateAptFileCache=1
+		;;
+		
+		1)
+			if [ ! -f "$1" ]; then
+				updateAptFileCache=1
+			else
+				updateAptFileCache=0
+			fi	
+		;;
+		
+		*)
+			updateAptFileCache=0
+		;;
+		
+	esac
+	
+	if [ $updateAptFileCache -eq 1 ]; then
+		core_message NOTICE "Updating apt-file cache, may be quite slow"
+		apt-file update
+	fi
 
 	if core_variable_isUnset _pathsd_helper_actions_Debian_tmpFilePath; then
 		local TMP_FILE
