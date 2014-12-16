@@ -61,17 +61,17 @@ _pathsd_helper_actions_Debian_writePathFile()
 	local fullyQualfiedPackageName="$2"
 	local absolutePath="$3"
 	
+	printf '%s %s %s\n' "$programName" "$fullyQualfiedPackageName" "$absolutePath" >"$_pathsd_helper_actions_Debian_outputPath"/"$programName".path
+}
+
+pathsd_helper_actions_Debian_operate()
+{
 	local pathFile="$_pathsd_helper_actions_Debian_outputPath"/"$programName".path
 	if [ -f "$pathFile" ]; then
 		core_message INFO "Not overwriting path file for program '$programName'"
 		return 0
 	fi
 	
-	printf '%s %s %s\n' "$programName" "$fullyQualfiedPackageName" "$absolutePath" >"$_pathsd_helper_actions_Debian_outputPath"/"$programName".path
-}
-
-pathsd_helper_actions_Debian_operate()
-{
 	case "$programName" in
 		
 		awk)
