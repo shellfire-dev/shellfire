@@ -45,7 +45,6 @@ pathsd_helper_actions_Debian_start()
 
 pathsd_helper_actions_Debian_operate()
 {
-	set -x
 	local pathPrefix
 	local absolutePath
 	local lineCount
@@ -79,7 +78,7 @@ pathsd_helper_actions_Debian_operate()
 					continue
 				fi
 				
-				printf '%s %s %s\n' "$programName" "$packageName" "$absolutePath" >"$_pathsd_helper_actions_Debian_outputPath"/"$programName".path
+				printf '%s %s %s\n' "$programName" "$firstPackageName" "$absolutePath" >"$_pathsd_helper_actions_Debian_outputPath"/"$programName".path
 				return 0
 			;;
 			
@@ -92,7 +91,6 @@ pathsd_helper_actions_Debian_operate()
 	done
 	
 	core_message WARN "No packages found for progam '$programName'"
-	set +x
 }
 
 pathsd_helper_actions_Debian_finish()
