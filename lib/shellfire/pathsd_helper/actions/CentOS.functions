@@ -7,12 +7,17 @@ pathsd_helper_actions_CentOS_start()
 		pathsd_helper_actions_CentOS_yumVerbosity=" --quiet"
 	fi
 	
-	sudo -p "Please enter your password for sudo to update yum: " yum makecache
+	sudo -p "Please enter your password for sudo to update yum: " yum${pathsd_helper_actions_CentOS_yumVerbosity} makecache
 }
 
+core_dependency_requires 'CentOS' repoquery
 pathsd_helper_actions_CentOS_operate()
 {
-	:
+	# As always, yum provides trully shocking output
+	#yum --quiet --cacheonly whatprovides '*bin/grep'
+	
+	# yum-utils package
+	repoquery --whatprovides '*bin/grep'
 }
 
 pathsd_helper_actions_CentOS_finish()
