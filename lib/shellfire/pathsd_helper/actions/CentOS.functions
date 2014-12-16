@@ -1,0 +1,15 @@
+core_dependency_requires 'CentOS' sudo yum
+pathsd_helper_actions_CentOS_start()
+{
+	:
+}
+
+pathsd_helper_actions_CentOS_operate()
+{
+	:
+}
+
+pathsd_helper_actions_CentOS_finish()
+{
+	:
+}

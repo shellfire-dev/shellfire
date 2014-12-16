@@ -20,6 +20,10 @@ pathsd_helper_execute_actions()
 	local action
 	for action in "$@"
 	do
+		if [ "$action" != "$core_dependency_packageManager" ]; then
+			continue
+		fi
+		
 		pathsd_helper_actions_${action}_start
 		pathsd_helper_execute_iterateOverPathFiles
 		pathsd_helper_actions_${action}_finish

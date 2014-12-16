@@ -3,14 +3,14 @@
 _program()
 {
 	core_usesIn pathsd_helper validate execute
-	core_usesIn pathsd_helper/actions Debian
+	core_usesIn pathsd_helper/actions Debian CentOS
 	
 	pathsd_helper_entrypoint()
 	{
 		pathsd_helper_execute_setDependencyPath
 		pathsd_helper_execute_guardDependencyPath
 		pathsd_helper_execute_setExtractFunction
-		pathsd_helper_execute_actions Debian
+		pathsd_helper_execute_actions Debian CentOS
 	}
 }
 
