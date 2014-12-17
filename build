@@ -10,4 +10,4 @@ set -u
 
 rm -rf ./output
 tools/fatten/fatten --force --repository-path tools/fatten --output-path ./output -- fatten
-output/fatten --force --output-path ./output -- paths.d-helper
+output/usr/bin/fatten --force --output-path ./output -- paths.d-helper
