@@ -16,7 +16,7 @@ pathsd_helper_actions_CentOS_start()
 	sudo -p "Please enter your password for sudo to update yum: " yum ${pathsd_helper_actions_CentOS_yumVerbosity} makecache
 }
 
-core_dependency_requires 'CentOS' repoquery sort uname
+core_dependency_requires 'CentOS' repoquery sort uname pandoc
 pathsd_helper_actions_CentOS_operate()
 {
 	if pathsd_helper_actions_guardOverwrite; then
