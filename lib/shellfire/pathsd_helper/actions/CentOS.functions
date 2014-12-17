@@ -95,28 +95,34 @@ pathsd_helper_actions_CentOS_operate()
 	local pathPrefix
 	local absolutePath
 	local repositoryId
+	local firstRepositoryId
 	local packageName
+	local firstPackageName
 	local lineCount
 	for pathPrefix in 'bin' 'sbin' 'usr/bin' 'usr/sbin'
 	do
 		set -x
 		# yum whatprovides creates trully shockingly badly formatted output, so we use repoquery
 		absolutePath=/"${pathPrefix}"/"${programName}"
-		repoquery --archlist="$(uname -m)" --qf='%{repoid}|%{name}' --file "$absolutePath" >"$pathsd_helper_actions_temporaryFilePath"
+		repoquery --archlist="$(uname -m)" --qf='%{repoid}|%{name}' --file "$absolutePath" | sort -u >"$pathsd_helper_actions_temporaryFilePath"
 		
 		repositoryId=''
+		firstRepositoryId=''
 		packageName=''
+		firstPackageName=''
 		lineCount=0
 		while IFS='|' read -r repositoryId packageName
 		do
 			lineCount=$((lineCount+1))
+			if [ $lineCount -eq 1 ]; then
+				firstRepositoryId="$repositoryId"
+				firstPackageName="$packageName"
+			fi
 			if [ "$repositoryId" = 'base' ]; then
 				break
 			fi
 		done <"$pathsd_helper_actions_temporaryFilePath"
-		echo "$programName" "$repositoryId"
-		echo "$programName" "$packageName"
-		set +x
+		
 		case $lineCount in
 			
 			0)
@@ -124,22 +130,22 @@ pathsd_helper_actions_CentOS_operate()
 			;;
 			
 			1)
-				case "$repositoryId" in
+				case "$firstRepositoryId" in
 				
 					base|updates|extras|centosplus|base-debuginfo|fasttrack|centosplus-source)
-						pathsd_helper_actions_writePathFile "$programName" "$packageName" "$absolutePath"
+						pathsd_helper_actions_writePathFile "$programName" "$firstPackageName" "$absolutePath"
 					;;
 					
 					epel)
-						pathsd_helper_actions_writePathFile "$programName" epel/"$packageName" "$absolutePath"
+						pathsd_helper_actions_writePathFile "$programName" epel/"$firstPackageName" "$absolutePath"
 					;;
 					
 					rpmforge|repoforge)
-						pathsd_helper_actions_writePathFile "$programName" repoforge/"$packageName" "$absolutePath"
+						pathsd_helper_actions_writePathFile "$programName" repoforge/"$firstPackageName" "$absolutePath"
 					;;
 					
 					*)
-						core_message WARN "Unknown repository id '$repositoryId' for progam '$programName' for path '$absolutePath' for package '$packageName'"
+						core_message WARN "Unknown repository id '$firstRepositoryId' for progam '$programName' for path '$absolutePath' for package '$firstPackageName'"
 					;;
 					
 				esac
