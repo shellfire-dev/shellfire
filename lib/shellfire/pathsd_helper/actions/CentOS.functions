@@ -101,7 +101,7 @@ pathsd_helper_actions_CentOS_operate()
 	do
 		# yum whatprovides creates trully shockingly badly formatted output, so we use repoquery
 		absolutePath=/"${pathPrefix}"/"${programName}"
-		repoquery --archlist="$(uname -m)" --qf='%{repoid}|%{name}' --file "$absolutePath" | sort -u >"$pathsd_helper_actions_temporaryFilePath"
+		repoquery --archlist="$(uname -m)" --qf='%{repoid}|%{name}' --file "$absolutePath" >"$pathsd_helper_actions_temporaryFilePath"
 		
 		repositoryId=''
 		packageName=''
