@@ -14,9 +14,11 @@ pathsd_helper_actions_CentOS_start()
 	fi
 	
 	sudo -p "Please enter your password for sudo to update yum: " yum ${pathsd_helper_actions_CentOS_yumVerbosity} makecache
+	
+	_core_dependency_check_CentOS_installRepository_epel
 }
 
-core_dependency_requires 'CentOS' repoquery sort uname pandoc
+core_dependency_requires 'CentOS' repoquery sort uname
 pathsd_helper_actions_CentOS_operate()
 {
 	if pathsd_helper_actions_guardOverwrite; then
@@ -92,19 +94,24 @@ pathsd_helper_actions_CentOS_operate()
 	
 	local pathPrefix
 	local absolutePath
+	local repositoryId
+	local packageNameAndVersion
 	local packageName
-	local remainder
+	local garbage
 	local lineCount
 	for pathPrefix in 'bin' 'sbin' 'usr/bin' 'usr/sbin'
 	do
 		# yum whatprovides creates trully shockingly badly formatted output, so we use repoquery
 		absolutePath=/"${pathPrefix}"/"${programName}"
-		repoquery --archlist="$(uname -m)" --qf=%{name} --file "$absolutePath" | sort -u >"$pathsd_helper_actions_temporaryFilePath"
+		repoquery --archlist="$(uname -m)" --qf=%{repoid}/%{name} --file "$absolutePath" | sort -u >"$pathsd_helper_actions_temporaryFilePath"
 		
 		lineCount=0
-		while IFS='-' read -r packageName remainder
+		while IFS='/' read -r repositoryId packageNameAndVersion
 		do
 			lineCount=$((lineCount+1))
+			IFS='-' read -r packageName garbage <<-EOF
+				${packageNameAndVersion}
+			EOF
 		done <"$pathsd_helper_actions_temporaryFilePath"
 		
 		case $lineCount in
@@ -114,7 +121,26 @@ pathsd_helper_actions_CentOS_operate()
 			;;
 			
 			1)
-				pathsd_helper_actions_writePathFile "$programName" "$packageName" "$absolutePath"
+				case "$repositoryId" in
+				
+					base|updates|extra|centosplus|base-debuginfo|fasttrack|centosplus-source)
+						pathsd_helper_actions_writePathFile "$programName" "$packageName" "$absolutePath"
+					;;
+					
+					epel)
+						pathsd_helper_actions_writePathFile "$programName" epel/"$packageName" "$absolutePath"
+					;;
+					
+					rpmforge|repoforge)
+						pathsd_helper_actions_writePathFile "$programName" repoforge/"$packageName" "$absolutePath"
+					;;
+					
+					*)
+						core_message WARN "Unknown repository id '$repositoryId' for progam '$programName' for path '$absolutePath' using repoquery --whatprovides '$absolutePath'"
+					;;
+					
+				esac
+				
 				return 0
 			;;
 			
