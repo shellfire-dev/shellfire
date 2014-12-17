@@ -13,3 +13,6 @@
 [submodule "tutorial/overdrive/lib/shellfire/xmlwriter"]
 	path = tutorial/overdrive/lib/shellfire/xmlwriter
 	url = https://github.com/shellfire-dev/xmlwriter
+[submodule "tools/fatten"]
+	path = tools/fatten
+	url = https://github.com/shellfire-dev/fatten.git

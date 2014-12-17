@@ -35,10 +35,12 @@ pathsd_helper_actions_CentOS_operate()
 		
 		7za|7z)
 			pathsd_helper_actions_writePathFileOverride epel/p7zip
+			return 0
 		;;
 		
 		lzip)
 			pathsd_helper_actions_writePathFileOverride epel/lzip
+			return 0
 		;;
 		
 		pixz|plzip|runzip|rzip)
