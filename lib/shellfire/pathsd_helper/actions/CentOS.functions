@@ -28,66 +28,27 @@ pathsd_helper_actions_CentOS_operate()
 	
 	case "$programName" in
 		
-		# Not needed
-		
 		brew|brew-rmtree)
 			core_message INFO "Ignoring program '$programName'"
 			return 0
 		;;
 		
-		# Missing
-		
-		7za|7z|7zr)
-			:
+		7za|7z)
+			pathsd_helper_actions_writePathFileOverride epel/p7zip
 		;;
 		
-		fakeroot)
-			:
+		lzip)
+			pathsd_helper_actions_writePathFileOverride epel/lzip
 		;;
 		
-		lrunzip|lrzcat|lrzip|lrztar|lrzuntar|lzip)
-			:
+		pixz|plzip|runzip|rzip)
+			core_message WARN "Program '$programName' has an unofficial implementation with SUSE at http://ftp.opensuse.org/factory-snapshot/repo/oss/suse/x86_64/ . There is an OpenSUSE-release RPM there."
+			return 0
 		;;
 		
-		pandoc)
-			:
-		;;
-		
-		pbunzip2|pbzcat|pbzip2)
-			:
-		;;
-		
-		pigz|unpigz)
-			:
-		;;
-		
-		pixz)
-			:
-		;;
-		
-		plzip)
-			:
-		;;
-		
-		rar|unrar)
-			:
-		;;
-		
-		runzip|rzip)
-			:
-		;;
-		
-		#?
-		srconv)
-			:
-		;;
-		
-		zopfli)
-			:
-		;;
-		
-		zpaq)
-			:
+		7zr|zopfli|zpaq)
+			core_message WARN "Program '$programName' has no known package for CentOS et al"
+			return 0
 		;;
 		
 	esac
