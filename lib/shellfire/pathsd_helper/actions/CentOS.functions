@@ -102,22 +102,17 @@ pathsd_helper_actions_CentOS_operate()
 		# yum whatprovides creates trully shockingly badly formatted output, so we use repoquery
 		absolutePath=/"${pathPrefix}"/"${programName}"
 		repoquery --archlist="$(uname -m)" --qf='%{repoid}|%{name}' --file "$absolutePath" | sort -u >"$pathsd_helper_actions_temporaryFilePath"
-
-		cat "$pathsd_helper_actions_temporaryFilePath"
+		
 		repositoryId=''
 		packageName=''
 		lineCount=0
 		while IFS='|' read -r repositoryId packageName
 		do
-			echo "$repositoryId"
-			echo "$packageName"
 			lineCount=$((lineCount+1))
 			if [ "$repositoryId" = 'base' ]; then
 				break
 			fi
 		done <"$pathsd_helper_actions_temporaryFilePath"
-			echo "$repositoryId"
-			echo "$packageName"
 		
 		case $lineCount in
 			
