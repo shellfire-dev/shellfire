@@ -1,0 +1,47 @@
+pathsd_helper_actions_createTemporaryFileOnce()
+{
+	if core_variable_isUnset pathsd_helper_actions_temporaryFilePath; then
+		local TMP_FILE
+		core_temporaryFiles_newFileToRemoveOnExit
+		pathsd_helper_actions_temporaryFilePath="$TMP_FILE"
+	fi
+}
+
+pathsd_helper_actions_createDependencyFolder()
+{
+	local folderPath="$pathsd_helper_pathsdPath"/"$action"
+	if [ ! -d "$folderPath" ]; then
+		mkdir -m 0755 -p "$folderPath" || core_exitError $core_commandLine_exitCode_CANTCREAT "Can't create dependency '$action' folder '$folderPath'"
+	fi
+}
+
+pathsd_helper_actions_guardOverwrite()
+{
+	local pathFile="$pathsd_helper_pathsdPath"/"$action"/"$programName".path
+	if [ -f "$pathFile" ]; then
+		core_message INFO "Not overwriting path file for dependency "$action" program '$programName'"
+		return 0
+	fi
+	return 1
+}
+
+pathsd_helper_actions_writePathFileOverride()
+{
+	local fullyQualfiedPackageName="$1"
+	core_message INFO "Using alternative package '$fullyQualfiedPackageName' for program '$programName'"
+	if [ $# -eq 2 ]; then
+		local path="$2"
+	else
+		local path="/usr/bin/${programName}"
+	fi
+	pathsd_helper_actions_writePathFile "$programName" "$fullyQualfiedPackageName" "$path"
+}
+
+pathsd_helper_actions_writePathFile()
+{
+	local programName="$1"
+	local fullyQualfiedPackageName="$2"
+	local absolutePath="$3"
+	
+	printf '%s %s %s\n' "$programName" "$fullyQualfiedPackageName" "$absolutePath" >"$pathsd_helper_pathsdPath"/"$action"/"$programName".path
+}

@@ -1,6 +1,12 @@
+core_usesIn pathsd_helper actions
+
 core_dependency_requires 'Debian' apt-file
 pathsd_helper_actions_Debian_start()
 {
+	pathsd_helper_actions_createTemporaryFileOnce
+	
+	pathsd_helper_actions_createDependencyFolder
+	
 	set +f
 	set -- ~/.cache/apt-file/*
 	set -f
@@ -30,52 +36,18 @@ pathsd_helper_actions_Debian_start()
 		core_message NOTICE "Updating apt-file cache, may be quite slow"
 		apt-file update
 	fi
-
-	if core_variable_isUnset _pathsd_helper_actions_Debian_tmpFilePath; then
-		local TMP_FILE
-		core_temporaryFiles_newFileToRemoveOnExit
-		_pathsd_helper_actions_Debian_tmpFilePath="$TMP_FILE"
-	fi
-	
-	_pathsd_helper_actions_Debian_outputPath="$pathsd_helper_pathsdPath"/Debian
-	if [ ! -d "$_pathsd_helper_actions_Debian_outputPath" ]; then
-		mkdir -m 0755 -p "$_pathsd_helper_actions_Debian_outputPath" || core_exitError $core_commandLine_exitCode_CANTCREAT "Can't create folder '$_pathsd_helper_actions_Debian_outputPath'"
-	fi
-}
-
-_pathsd_helper_actions_Debian_writePathFileOverride()
-{
-	local fullyQualfiedPackageName="$1"
-	core_message INFO "Using alternative package '$fullyQualfiedPackageName' for program '$programName'"
-	if [ $# -eq 2 ]; then
-		local path="$2"
-	else
-		local path="/usr/bin/${programName}"
-	fi
-	_pathsd_helper_actions_Debian_writePathFile "$programName" "$fullyQualfiedPackageName" "$path"
-}
-
-_pathsd_helper_actions_Debian_writePathFile()
-{
-	local programName="$1"
-	local fullyQualfiedPackageName="$2"
-	local absolutePath="$3"
-	
-	printf '%s %s %s\n' "$programName" "$fullyQualfiedPackageName" "$absolutePath" >"$_pathsd_helper_actions_Debian_outputPath"/"$programName".path
 }
 
 pathsd_helper_actions_Debian_operate()
 {
-	local pathFile="$_pathsd_helper_actions_Debian_outputPath"/"$programName".path
-	if [ -f "$pathFile" ]; then
-		core_message INFO "Not overwriting path file for program '$programName'"
+	if pathsd_helper_actions_guardOverwrite; then
 		return 0
 	fi
 	
 	case "$programName" in
 		
 		awk)
-			_pathsd_helper_actions_Debian_writePathFileOverride 'gawk' '/usr/bin/gawk'
+			pathsd_helper_actions_writePathFileOverride 'gawk' '/usr/bin/gawk'
 			return 0
 		;;
 		
@@ -85,45 +57,45 @@ pathsd_helper_actions_Debian_operate()
 		;;
 		
 		'c++filt')
-			_pathsd_helper_actions_Debian_writePathFileOverride 'binutils'
+			pathsd_helper_actions_writePathFileOverride 'binutils'
 			return 0
 		;;
 		
 		addr2line|ar|nm|objcopy|objdump|ranlib|readelf|size|strings|strip)
-			_pathsd_helper_actions_Debian_writePathFileOverride 'binutils-multiarch'
+			pathsd_helper_actions_writePathFileOverride 'binutils-multiarch'
 			return 0
 		;;
 		
 		uptime)
-			_pathsd_helper_actions_Debian_writePathFileOverride 'procps'
+			pathsd_helper_actions_writePathFileOverride 'procps'
 			return 0
 		;;
 		
 		# Note, not fakeroot-ng, which needs porting to Mac OS X Homebrew
 		fakeroot)
-			_pathsd_helper_actions_Debian_writePathFileOverride 'fakeroot' '/usr/bin/fakeroot-sysv'
+			pathsd_helper_actions_writePathFileOverride 'fakeroot' '/usr/bin/fakeroot-sysv'
 			return 0
 		;;
 		
 		zcat|zcmp|zdiff|zegrep|zfgrep|zgrep)
-			_pathsd_helper_actions_Debian_writePathFileOverride 'gzip' "/bin/${programName}"
+			pathsd_helper_actions_writePathFileOverride 'gzip' "/bin/${programName}"
 			return 0
 		;;
 		
 		lzcat|lzcmp|lzdiff|lzegrep|lzfgrep|lzgrep|lzless|lzma|lzmore|unlzma)
-			_pathsd_helper_actions_Debian_writePathFileOverride 'xz-utils'
+			pathsd_helper_actions_writePathFileOverride 'xz-utils'
 			return 0
 		;;
 		
 		# Also unrar-free
 		unrar)
-			_pathsd_helper_actions_Debian_writePathFileOverride 'unrar'
+			pathsd_helper_actions_writePathFileOverride 'unrar'
 			return 0
 		;;
 		
 		# Ubuntu doesn't install these symlinks that chanhge pbzip2's behaviour; we fake them as we create a false path full of symlinks.
 		pbunzip2|pbzcat)
-			_pathsd_helper_actions_Debian_writePathFileOverride 'pbzip2' "/usr/bin/pbzip2"
+			pathsd_helper_actions_writePathFileOverride 'pbzip2' "/usr/bin/pbzip2"
 			return 0
 		;;
 		
@@ -139,7 +111,7 @@ pathsd_helper_actions_Debian_operate()
 	do
 		absolutePath=/"${pathPrefix}"/"${programName}"
 		# Irritaingly, apt-file does not use a non-zero exit code for no matches; it returns a blank line for no matches; it outputs a trailing blank line if there are matches
-		apt-file --non-interactive --package-only --regexp search "^${absolutePath}$" >"$_pathsd_helper_actions_Debian_tmpFilePath"
+		apt-file --non-interactive --package-only --regexp search "^${absolutePath}$" >"$pathsd_helper_actions_temporaryFilePath"
 		lineCount=0
 		packageName=''
 		firstPackageName=''
@@ -149,7 +121,7 @@ pathsd_helper_actions_Debian_operate()
 			if [ $lineCount -eq 1 ]; then
 				firstPackageName="$packageName"
 			fi
-		done <"$_pathsd_helper_actions_Debian_tmpFilePath"
+		done <"$pathsd_helper_actions_temporaryFilePath"
 		
 		case $lineCount in
 			
@@ -163,7 +135,7 @@ pathsd_helper_actions_Debian_operate()
 					continue
 				fi
 				
-				_pathsd_helper_actions_Debian_writePathFile "$programName" "$firstPackageName" "$absolutePath"
+				pathsd_helper_actions_writePathFile "$programName" "$firstPackageName" "$absolutePath"
 				return 0
 			;;
 			

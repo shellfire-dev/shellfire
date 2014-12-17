@@ -1,6 +1,12 @@
+core_usesIn pathsd_helper actions
+
 core_dependency_requires 'CentOS' sudo yum
 pathsd_helper_actions_CentOS_start()
 {
+	pathsd_helper_actions_createTemporaryFileOnce
+	
+	pathsd_helper_actions_createDependencyFolder
+	
 	if [ $(core_init_verbosity) -gt 0 ]; then
 		pathsd_helper_actions_CentOS_yumVerbosity=""
 	else
@@ -10,25 +16,51 @@ pathsd_helper_actions_CentOS_start()
 	sudo -p "Please enter your password for sudo to update yum: " yum ${pathsd_helper_actions_CentOS_yumVerbosity} makecache
 }
 
-core_dependency_requires 'CentOS' repoquery
+core_dependency_requires 'CentOS' repoquery sort
 pathsd_helper_actions_CentOS_operate()
 {
-	# As always, yum provides trully shocking output
-	#yum --quiet --cacheonly whatprovides '*bin/grep'
+	if pathsd_helper_actions_guardOverwrite; then
+		return 0
+	fi
 	
-	# yum-utils package
+	# yum whatprovides creates trully shockingly badly formatted output, so we use repoquery
 	
-	echo START $programName
 	local pathPrefix
 	local absolutePath
 	local packageName
+	local remainder
+	local lineCount
 	for pathPrefix in 'bin' 'sbin' 'usr/bin' 'usr/sbin'
 	do
 		absolutePath=/"${pathPrefix}"/"${programName}"
-		#repoquery --whatprovides '*bin/grep'
-		repoquery --whatprovides "$absolutePath"
+		repoquery --whatprovides "$absolutePath" | sort -u >"$pathsd_helper_actions_temporaryFilePath"
+		
+		lineCount=0
+		while IFS='-' read -r packageName remainder
+		do
+			lineCount=$((lineCount+1))
+		done <"$pathsd_helper_actions_temporaryFilePath"
+		
+		case $lineCount in
+			
+			0)
+				continue
+			;;
+			
+			1)
+				pathsd_helper_actions_writePathFile "$programName" "$packageName" "$absolutePath"
+				return 0
+			;;
+			
+			*)
+				core_message WARN "Too many packages found for progam '$programName' for path '$absolutePath' using repoquery --whatprovides '$absolutePath'"
+				return 0
+			;;
+			
+		esac
 	done
-	echo END
+	
+	core_message WARN "No packages found for progam '$programName'"
 }
 
 pathsd_helper_actions_CentOS_finish()
