@@ -5,7 +5,7 @@
 build_tools_fatten()
 {
 	cd build/tools
-		./fatten
+		./fatten --force --output-path ../../output -- fatten
 	cd -
 }
 
@@ -16,6 +16,7 @@ build_tools()
 
 build()
 {
+	# fatten paths.d-helper
 	build_tools
 }
 
