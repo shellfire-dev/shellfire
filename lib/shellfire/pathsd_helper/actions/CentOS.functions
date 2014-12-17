@@ -101,13 +101,23 @@ pathsd_helper_actions_CentOS_operate()
 	do
 		# yum whatprovides creates trully shockingly badly formatted output, so we use repoquery
 		absolutePath=/"${pathPrefix}"/"${programName}"
-		repoquery --archlist="$(uname -m)" --qf=%{repoid}/%{name} --file "$absolutePath" | sort -u >"$pathsd_helper_actions_temporaryFilePath"
-		
+		repoquery --archlist="$(uname -m)" --qf='%{repoid}|%{name}' --file "$absolutePath" | sort -u >"$pathsd_helper_actions_temporaryFilePath"
+
+		cat "$pathsd_helper_actions_temporaryFilePath"
+		repositoryId=''
+		packageName=''
 		lineCount=0
-		while IFS='/' read -r repositoryId packageName
+		while IFS='|' read -r repositoryId packageName
 		do
+			echo "$repositoryId"
+			echo "$packageName"
 			lineCount=$((lineCount+1))
+			if [ "$repositoryId" = 'base' ]; then
+				break
+			fi
 		done <"$pathsd_helper_actions_temporaryFilePath"
+			echo "$repositoryId"
+			echo "$packageName"
 		
 		case $lineCount in
 			
@@ -131,7 +141,7 @@ pathsd_helper_actions_CentOS_operate()
 					;;
 					
 					*)
-						core_message WARN "Unknown repository id '$repositoryId' for progam '$programName' for path '$absolutePath' using repoquery --whatprovides '$absolutePath'"
+						core_message WARN "Unknown repository id '$repositoryId' for progam '$programName' for path '$absolutePath'"
 					;;
 					
 				esac
@@ -140,7 +150,7 @@ pathsd_helper_actions_CentOS_operate()
 			;;
 			
 			*)
-				core_message WARN "Too many packages found for progam '$programName' for path '$absolutePath' using repoquery --whatprovides '$absolutePath'"
+				core_message WARN "Too many packages found for progam '$programName' for path '$absolutePath'"
 				return 0
 			;;
 			
