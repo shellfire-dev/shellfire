@@ -60,7 +60,7 @@ We work well on POSIX shells that support a `local` keyword or alias:-
   * AIX ksh88
   * Solaries ksh88
 
-yash is not there yet but could be if there's interest. We're not going to support ksh93 as it's just too different, and zsh, great as it is an interactive shell, is a bit hit and miss.
+yash is not there yet but could be if there's interest. We're not going to support ksh93 as it's just too different, and zsh, great as it is an interactive shell, is a bit hit and miss. MinGW MSYS uses bash 3.1, which mostly works, but has some terrible IFS handling bugs (in particular, this affects arrays; this can be worked around, but a generic solution handicaps all other shells).
 
 ## So what's included?
 In homage to Python, batteries are included. Here's the list of modules and namespaces:-
