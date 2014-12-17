@@ -4,10 +4,6 @@ set -u
 
 # Since this runs under Travis, we don't use shellfire, yet.
 
-# TODO: Modify fatten so that we create the output binary in /usr/bin/NAME
-# need --bin-path
-# detect if relative or absolute
-
 rm -rf ./output
 tools/fatten/fatten --force --repository-path tools/fatten --output-path ./output -- fatten
 output/usr/bin/fatten --force --output-path ./output -- paths.d-helper
