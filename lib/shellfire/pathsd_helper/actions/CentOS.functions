@@ -16,6 +16,7 @@ pathsd_helper_actions_CentOS_start()
 	sudo -p "Please enter your password for sudo to update yum: " yum ${pathsd_helper_actions_CentOS_yumVerbosity} makecache
 	
 	_core_dependency_check_CentOS_installRepository_epel
+	_core_dependency_check_CentOS_installRepository_rpmforge
 }
 
 core_dependency_requires 'CentOS' repoquery sort uname
