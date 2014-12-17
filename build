@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+
+# Since this runs under Travis, we don't use shellfire, yet.
+
+build_tools_fatten()
+{
+	cd build/tools
+		./fatten
+	cd -
+}
+
+build_tools()
+{
+	build_tools_fatten
+}
+
+build()
+{
+	build_tools
+}
+
+build
