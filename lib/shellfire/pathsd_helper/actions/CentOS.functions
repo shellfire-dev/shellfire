@@ -17,7 +17,18 @@ pathsd_helper_actions_CentOS_operate()
 	#yum --quiet --cacheonly whatprovides '*bin/grep'
 	
 	# yum-utils package
-	repoquery --whatprovides '*bin/grep'
+	
+	echo START
+	local pathPrefix
+	local absolutePath
+	local packageName
+	for pathPrefix in 'bin' 'sbin' 'usr/bin' 'usr/sbin'
+	do
+		absolutePath=/"${pathPrefix}"/"${programName}"
+		#repoquery --whatprovides '*bin/grep'
+		repoquery --whatprovides "$absolutePath"
+	done
+	echo END
 }
 
 pathsd_helper_actions_CentOS_finish()
