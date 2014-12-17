@@ -16,14 +16,79 @@ pathsd_helper_actions_CentOS_start()
 	sudo -p "Please enter your password for sudo to update yum: " yum ${pathsd_helper_actions_CentOS_yumVerbosity} makecache
 }
 
-core_dependency_requires 'CentOS' repoquery sort
+core_dependency_requires 'CentOS' repoquery sort uname
 pathsd_helper_actions_CentOS_operate()
 {
 	if pathsd_helper_actions_guardOverwrite; then
 		return 0
 	fi
 	
-	# yum whatprovides creates trully shockingly badly formatted output, so we use repoquery
+	case "$programName" in
+		
+		# Not needed
+		
+		brew|brew-rmtree)
+			core_message INFO "Ignoring program '$programName'"
+			return 0
+		;;
+		
+		# Missing
+		
+		7za|7z|7zr)
+			:
+		;;
+		
+		fakeroot)
+			:
+		;;
+		
+		lrunzip|lrzcat|lrzip|lrztar|lrzuntar|lzip)
+			:
+		;;
+		
+		pandoc)
+			:
+		;;
+		
+		pbunzip2|pbzcat|pbzip2)
+			:
+		;;
+		
+		pigz|unpigz)
+			:
+		;;
+		
+		pixz)
+			:
+		;;
+		
+		plzip)
+			:
+		;;
+		
+		rar|unrar)
+			:
+		;;
+		
+		runzip|rzip)
+			:
+		;;
+		
+		#?
+		srconv)
+			:
+		;;
+		
+		zopfli)
+			:
+		;;
+		
+		zpaq)
+			:
+		;;
+		
+	esac
+	
 	
 	local pathPrefix
 	local absolutePath
@@ -32,8 +97,9 @@ pathsd_helper_actions_CentOS_operate()
 	local lineCount
 	for pathPrefix in 'bin' 'sbin' 'usr/bin' 'usr/sbin'
 	do
+		# yum whatprovides creates trully shockingly badly formatted output, so we use repoquery
 		absolutePath=/"${pathPrefix}"/"${programName}"
-		repoquery --whatprovides "$absolutePath" | sort -u >"$pathsd_helper_actions_temporaryFilePath"
+		repoquery --archlist="$(uname -m)" --qf=%{name} --file "$absolutePath" | sort -u >"$pathsd_helper_actions_temporaryFilePath"
 		
 		lineCount=0
 		while IFS='-' read -r packageName remainder
