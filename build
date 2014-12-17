@@ -1,23 +1,7 @@
 #!/usr/bin/env sh
+set -e
+set -u
 
 # Since this runs under Travis, we don't use shellfire, yet.
 
-build_tools_fatten()
-{
-	cd build/tools
-		./fatten --force --output-path ../../output -- fatten
-	cd -
-}
-
-build_tools()
-{
-	build_tools_fatten
-}
-
-build()
-{
-	# fatten paths.d-helper
-	build_tools
-}
-
-build
+tools/fatten/fatten --force --repository-path tools/fatten --output-path ./output -- fatten
