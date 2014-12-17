@@ -1,3 +1,12 @@
+pathsd_helper_execute_makePathsAbsolute()
+{
+	pushd "$pathsd_helper_pathsdPath"
+	
+		pathsd_helper_pathsdPath="$(pwd)"
+	
+	popd
+}
+
 pathsd_helper_execute_setDependencyPath()
 {
 	pathsd_helper_execute_dependencyPath="$pathsd_helper_pathsdPath"/"$pathsd_helper_dependencyCheck"

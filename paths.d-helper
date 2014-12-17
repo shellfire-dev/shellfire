@@ -7,6 +7,7 @@ _program()
 	
 	pathsd_helper_entrypoint()
 	{
+		pathsd_helper_execute_makePathsAbsolute
 		pathsd_helper_execute_setDependencyPath
 		pathsd_helper_execute_guardDependencyPath
 		pathsd_helper_execute_setExtractFunction
