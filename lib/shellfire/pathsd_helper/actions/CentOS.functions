@@ -99,6 +99,7 @@ pathsd_helper_actions_CentOS_operate()
 	local lineCount
 	for pathPrefix in 'bin' 'sbin' 'usr/bin' 'usr/sbin'
 	do
+		set -x
 		# yum whatprovides creates trully shockingly badly formatted output, so we use repoquery
 		absolutePath=/"${pathPrefix}"/"${programName}"
 		repoquery --archlist="$(uname -m)" --qf='%{repoid}|%{name}' --file "$absolutePath" >"$pathsd_helper_actions_temporaryFilePath"
@@ -113,7 +114,9 @@ pathsd_helper_actions_CentOS_operate()
 				break
 			fi
 		done <"$pathsd_helper_actions_temporaryFilePath"
-		
+		echo "$programName" "$repositoryId"
+		echo "$programName" "$packageName"
+		set +x
 		case $lineCount in
 			
 			0)
@@ -136,7 +139,7 @@ pathsd_helper_actions_CentOS_operate()
 					;;
 					
 					*)
-						core_message WARN "Unknown repository id '$repositoryId' for progam '$programName' for path '$absolutePath'"
+						core_message WARN "Unknown repository id '$repositoryId' for progam '$programName' for path '$absolutePath' for package '$packageName'"
 					;;
 					
 				esac
