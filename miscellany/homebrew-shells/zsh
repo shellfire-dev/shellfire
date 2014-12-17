@@ -1,2 +1,0 @@
-#!/usr/bin/env bash
-exec -a zsh "$(brew --prefix zsh)"/bin/zsh "$@"

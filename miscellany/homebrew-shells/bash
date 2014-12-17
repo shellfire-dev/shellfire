@@ -1,2 +1,0 @@
-#!/usr/bin/env bash
-exec -a bash "$(brew --prefix bash)"/bin/bash "$@"
