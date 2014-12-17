@@ -101,7 +101,6 @@ pathsd_helper_actions_CentOS_operate()
 	local lineCount
 	for pathPrefix in 'bin' 'sbin' 'usr/bin' 'usr/sbin'
 	do
-		set -x
 		# yum whatprovides creates trully shockingly badly formatted output, so we use repoquery
 		absolutePath=/"${pathPrefix}"/"${programName}"
 		repoquery --archlist="$(uname -m)" --qf='%{repoid}|%{name}' --file "$absolutePath" | sort -u >"$pathsd_helper_actions_temporaryFilePath"
