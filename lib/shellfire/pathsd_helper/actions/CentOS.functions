@@ -18,7 +18,7 @@ pathsd_helper_actions_CentOS_operate()
 	
 	# yum-utils package
 	
-	echo START
+	echo START $programName
 	local pathPrefix
 	local absolutePath
 	local packageName
