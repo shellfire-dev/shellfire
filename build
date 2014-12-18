@@ -4,6 +4,10 @@ set -u
 
 # Since this runs under Travis, we don't use shellfire, yet.
 
+# if core_variable_isSet TRAVIS_CI ...
+# 	git submodule update --init --recursive
+# fi
+
 rm -rf ./output
 tools/fatten/fatten --force --repository-path tools/fatten --output-path ./output -- fatten
 output/usr/bin/fatten --force --output-path ./output -- paths.d-helper
