@@ -9,5 +9,5 @@ set -u
 # fi
 
 rm -rf ./output
-tools/fatten/fatten --force --repository-path tools/fatten --output-path ./output -- fatten
+tools/fatten/fatten --verbose 3 --force --repository-path tools/fatten --output-path ./output -- fatten
 output/usr/bin/fatten --verbose 3 --force --output-path ./output -- paths.d-helper
