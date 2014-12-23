@@ -18,7 +18,6 @@ _program()
 		build_fattenPath="${fattenedOutputPath}${binPath}"/fatten
 	}
 	
-	# We could turn this into a sort of config file that sits in the root of the repository (or in tools)
 	core_dependency_requires '*' rm mkdir ln
 	build_fattenAndSwaddle()
 	{
@@ -40,7 +39,7 @@ _program()
 		fi
 
 		"$build_fattenPath" --verbose $(core_init_verbosity) --repository-path "$repositoryPath" --output-path "$fattenedOutputPath" --bin-path "$binPath" -- "$@"
-		"$build_swaddlePath" --verbose $(core_init_verbosity) --swaddling-path "$swaddlingPath" --output-path "$swaddledOutputPath"
+		"$build_swaddlePath" --verbose $(core_init_verbosity) --swaddling-path "$swaddlingPath" --output-path "$swaddledOutputPath" -- "$groupName"
 	}
 	
 	build()
