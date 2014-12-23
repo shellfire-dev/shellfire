@@ -23,12 +23,14 @@ _program()
 		travis_ci_updateGitSubmodulesRecursively
 		build_prepareOutput
 		
-		build_fatten "$(pwd)"/tools/fatten fatten '/usr/bin' fatten
+		local binPath="/usr/bin"
 		
-		# Deliberate override to use our newly made fatten
-		build_fattenPath="$build_outputPath"/usr/bin/fatten
-		build_fatten "$(pwd)" shellfire '/usr/bin' paths.d-helper
-		build_fatten "$(pwd)"/tools/swaddle swaddle '/usr/bin' swaddle
+		build_fatten "$(pwd)"/tools/fatten fatten "$binPath" fatten
+		
+		# Deliberate override to use our newly made fatten to prove it works
+		build_fattenPath="${build_outputPath}/fatten${binPath}"/fatten
+		build_fatten "$(pwd)" shellfire "$binPath" paths.d-helper
+		build_fatten "$(pwd)"/tools/swaddle swaddle "$binPath" swaddle
 	}
 }
 
