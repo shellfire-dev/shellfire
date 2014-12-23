@@ -20,7 +20,7 @@ _program()
 	
 	build()
 	{
-		travis_ci_updateGitSubmodulesRecursively
+		build_travis_ci_updateGitSubmodulesRecursively
 		build_prepareOutput
 		
 		_build_createInitialFatten 'initial-fatten'
