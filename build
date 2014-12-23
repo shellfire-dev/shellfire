@@ -3,7 +3,7 @@
 _program()
 {
 	core_usesIn build
-	core_usesIn travis ci
+	core_usesIn build/travis ci
 
 	core_dependency_requires '*' rm mkdir
 	_build_createInitialFatten()
@@ -16,30 +16,6 @@ _program()
 		
 		# Override to force use of our fattened fatten
 		build_fattenPath="${fattenedOutputPath}${binPath}"/fatten
-	}
-	
-	core_dependency_requires '*' rm mkdir ln
-	build_fattenAndSwaddle()
-	{
-		local groupName="$1"
-		local repositoryPath="$2"
-		local binPath="$3"
-		shift 3
-		
-		local swaddlingPath="$repositoryPath"/swaddling
-		local bodyPath="$swaddlingPath"/body
-		local fattenedOutputPath="$build_outputPath"/fattened/"$groupName"
-		local swaddledOutputPath="$build_outputPath"/swaddled/"$groupName"
-		
-		# fatten to the body path, but keep it outside of the git repository just in case a '.gitignore' file isn't set at body/.gitignore
-		rm -rf "$fattenedOutputPath"
-		mkdir -m 0755 -p "${fattenedOutputPath}${binPath}"
-		if [ -e "$bodyPath" ]; then
-			ln -s "$fattenedOutputPath" "$bodyPath"
-		fi
-
-		"$build_fattenPath" --verbose $(core_init_verbosity) --repository-path "$repositoryPath" --output-path "$fattenedOutputPath" --bin-path "$binPath" -- "$@"
-		"$build_swaddlePath" --verbose $(core_init_verbosity) --swaddling-path "$swaddlingPath" --output-path "$swaddledOutputPath" -- "$groupName"
 	}
 	
 	build()
