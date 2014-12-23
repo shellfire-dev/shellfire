@@ -8,10 +8,14 @@ _program()
 	build_fatten()
 	{
 		local repositoryPath="$1"
-		shift 1
+		local relativeOutputPath="$2"
+		local binPath="$3"
+		shift 3
 		
+		local absoluteOutputPath="$build_outputPath"/"$relativeOutputPath"
+		mkdir -m 0755 -p "$absoluteOutputPath"
 		core_message INFO "Fattening all of $@ to "
-		"$build_fattenPath" --verbose $(core_init_verbosity) --output-path "$build_outputPath" --repository-path "$repositoryPath" -- "$@"
+		"$build_fattenPath" --verbose $(core_init_verbosity) --repository-path "$repositoryPath" --output-path "$absoluteOutputPath" --bin-path "$binPath" -- "$@"
 	}
 	
 	build()
@@ -19,12 +23,12 @@ _program()
 		travis_ci_updateGitSubmodulesRecursively
 		build_prepareOutput
 		
-		build_fatten "$(pwd)"/tools/fatten fatten
+		build_fatten "$(pwd)"/tools/fatten fatten '/usr/bin' fatten
 		
 		# Deliberate override to use our newly made fatten
 		build_fattenPath="$build_outputPath"/usr/bin/fatten
-		build_fatten "$(pwd)" paths.d-helper
-		build_fatten "$(pwd)"/tools/swaddle swaddle
+		build_fatten "$(pwd)" shellfire '/usr/bin' paths.d-helper
+		build_fatten "$(pwd)"/tools/swaddle swaddle '/usr/bin' swaddle
 	}
 }
 
