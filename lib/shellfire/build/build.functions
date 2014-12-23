@@ -14,7 +14,6 @@ build_fattenAndSwaddle()
 	local swaddlingPath="$repositoryPath"/swaddling
 	local bodyPath="$swaddlingPath"/body
 	local fattenedOutputPath="$build_outputPath"/fattened/"$groupName"
-	local swaddledOutputPath="$build_outputPath"/swaddled/"$groupName"
 	
 	# fatten to the body path, but keep it outside of the git repository just in case a '.gitignore' file isn't set at body/.gitignore
 	rm -rf "$fattenedOutputPath"
@@ -22,6 +21,9 @@ build_fattenAndSwaddle()
 	if [ -e "$bodyPath" ]; then
 		ln -s "$fattenedOutputPath" "$bodyPath"
 	fi
+
+	local swaddledOutputPath="$build_outputPath"/swaddled/"$groupName"
+	mkdir -m "$swaddledOutputPath"
 
 	"$build_fattenPath" --verbose $(core_init_verbosity) --repository-path "$repositoryPath" --output-path "$fattenedOutputPath" --bin-path "$build_binPath" -- "$@"
 	"$build_swaddlePath" --verbose $(core_init_verbosity) --swaddling-path "$swaddlingPath" --output-path "$swaddledOutputPath" -- "$groupName"
