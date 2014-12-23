@@ -24,6 +24,7 @@ _program()
 		# Deliberate override to use our newly made fatten
 		build_fattenPath="$build_outputPath"/usr/bin/fatten
 		build_fatten "$(pwd)" paths.d-helper
+		build_fatten "$(pwd)"/tools/swaddle swaddle
 	}
 }
 
