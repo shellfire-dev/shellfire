@@ -12,7 +12,7 @@ _program()
 		local fattenedOutputPath="$build_outputPath"/fattened/"$groupName"
 		rm -rf "$fattenedOutputPath"
 		mkdir -m 0755 -p "$fattenedOutputPath"
-		"$build_fattenPath_default" --verbose $(core_init_verbosity) --repository-path tools/fatten --output-path "$fattenedOutputPath" --bin-path "$build_binPath" -- fatten
+		"$build_fattenPath_default" --verbose $(core_init_verbosity) --force --repository-path tools/fatten --output-path "$fattenedOutputPath" --bin-path "$build_binPath" -- fatten
 		
 		# Override to force use of our fattened fatten
 		build_fattenPath="${fattenedOutputPath}${build_binPath}"/fatten
