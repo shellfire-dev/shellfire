@@ -16,3 +16,6 @@
 [submodule "tools/fatten"]
 	path = tools/fatten
 	url = https://github.com/shellfire-dev/fatten.git
+[submodule "tools/swaddle"]
+	path = tools/swaddle
+	url = https://github.com/raphaelcohn/swaddle.git
