@@ -1,0 +1,5 @@
+core_dependency_requires '*' rm
+build_prepareOutput()
+{
+	rm -rf "$build_outputPath"
+}

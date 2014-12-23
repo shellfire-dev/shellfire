@@ -1,0 +1,22 @@
+travis_ci_isExecuting()
+{
+	if core_variable_isSet TRAVIS; then
+		if core_variable_isTrue "$TRAVIS"; then
+			return 0
+		fi
+	fi
+	return 1
+}
+
+travis_ci_do()
+{
+	if travis_ci_isExecuting; then
+		"$@"
+	fi
+}
+
+core_dependency_requires '*' git
+travis_ci_updateGitSubmodulesRecursively()
+{
+	travis_ci_do git submodule update --init --recursive
+}

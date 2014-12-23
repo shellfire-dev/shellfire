@@ -1,13 +1,146 @@
 #!/usr/bin/env sh
-set -e
-set -u
 
-# Since this runs under Travis, we don't use shellfire, yet.
+_program()
+{
+	core_usesIn build
+	core_usesIn travis ci
+	
+	build_fatten()
+	{
+		local repositoryPath="$1"
+		shift 1
+		
+		core_message INFO "Fattening all of $@ to "
+		"$build_fattenPath" --verbose $(core_init_verbosity) --output-path "$build_outputPath" --repository-path "$repositoryPath" -- "$@"
+	}
+	
+	build()
+	{
+		travis_ci_updateGitSubmodulesRecursively
+		build_prepareOutput
+		
+		build_fatten "$(pwd)"/tools/fatten fatten
+		
+		# Deliberate override to use our newly made fatten
+		build_fattenPath="$build_outputPath"/usr/bin/fatten
+		build_fatten "$(pwd)" paths.d-helper
+	}
+}
 
-# if core_variable_isSet TRAVIS_CI ...
-# 	git submodule update --init --recursive
-# fi
+_program_name='build'
+_program_namespace='build'
+_program_version='unversioned'
+_program_package_or_build=''
+_program_copyright='(c) 2014 Raphael Cohn'
+_program_licence='MIT'
+_program_written_by='Raphael Cohn'
+_program_path="$([ "${_program_fattening_program_path+set}" = 'set' ] && printf '%s\n' "$_program_fattening_program_path" || ([ "${0%/*}" = "${0}" ] && printf '%s\n' '.' || printf '%s\n' "${0%/*}"))"
+_program_libPath="${_program_path}/lib"
+_program_etcPath="${_program_path}/etc"
+_program_entrypoint='build'
 
-rm -rf ./output
-tools/fatten/fatten --verbose 3 --force --repository-path tools/fatten --output-path ./output -- fatten
-output/usr/bin/fatten --verbose 3 --force --output-path ./output -- paths.d-helper
+_program_commandLine_parseInitialise()
+{
+	build_outputPath_default="$(pwd)/output"
+	build_fattenPath_default="$(pwd)/tools/fatten/fatten"
+	build_swaddlePath_default="$(pwd)/tools/swaddle/swaddle"
+}
+
+_program_commandLine_helpMessage()
+{
+	_program_commandLine_helpMessage_usage="[OPTION]..."
+	_program_commandLine_helpMessage_description="Builds shellfire tools, typically under Travis CI"
+	_program_commandLine_helpMessage_options="
+  -p, --output-path PATH      PATH to build output to.
+                              Defaults to one based on current working directory:-
+                              $build_outputPath_default
+  -f, --fatten-path PATH      PATH to fatten executable.
+                              Defaults to one based on current working directory:-
+                              $build_fattenPath_default
+  -s, --swaddle-path PATH     PATH to swaddle executable.
+                              Defaults to one based on current working directory:-
+                              $build_swaddlePath_default"
+    _program_commandLine_helpMessage_optionsSpacing='     '
+	_program_commandLine_helpMessage_configurationKeys="
+  build_outputPath       Equivalent to --output-path
+  build_fattenPath       Equivalent to --fatten-path
+  build_swaddlePath      Equivalent to --swaddle-path
+"
+	_program_commandLine_helpMessage_examples="
+  ./${_program_name}
+"
+}
+
+_program_commandLine_optionExists()
+{
+	case "$optionName" in
+	
+		p|pathsd-path)
+			echo 'yes-argumented'
+		;;
+	
+		f|fatten-path)
+			echo 'yes-argumented'
+		;;
+	
+		s|swaddle-path)
+			echo 'yes-argumented'
+		;;
+		
+		*)
+			echo 'no'
+		;;
+	
+	esac
+}
+
+_program_commandLine_processOptionWithArgument()
+{
+	case "$optionName" in
+	
+		p|pathsd-path)
+			core_validate_folderPathIsReadableAndSearchableAndWritableOrCanBeCreated $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			build_outputPath="$optionValue"
+		;;
+	
+		f|fatten-path)
+			core_validate_filePathReadableAndExecutable $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			build_outputPath="$optionValue"
+		;;
+	
+		s|swaddle-path)
+			core_validate_filePathReadableAndExecutable $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			build_outputPath="$optionValue"
+		;;
+	
+	esac
+}
+
+_program_commandLine_validate()
+{
+	if core_variable_isSet build_outputPath; then
+		core_validate_folderPathIsReadableAndSearchableAndWritableOrCanBeCreated $core_commandLine_exitCode_CONFIG 'configuration setting' 'build_outputPath' "$build_outputPath"
+	else
+		core_message INFO "Defaulting --output-path to '$build_outputPath_default'"
+		build_outputPath="$build_outputPath_default"
+		core_validate_folderPathIsReadableAndSearchableAndWritableOrCanBeCreated $core_commandLine_exitCode_CONFIG 'default' 'build_outputPath' "$build_outputPath"
+	fi
+	
+	if core_variable_isSet build_fattenPath; then
+		core_validate_filePathReadableAndExecutable $core_commandLine_exitCode_CONFIG 'configuration setting' 'build_fattenPath' "$build_fattenPath"
+	else
+		core_message INFO "Defaulting --fatten-path to '$build_fattenPath_default'"
+		build_fattenPath="$build_fattenPath_default"
+		core_validate_filePathReadableAndExecutable $core_commandLine_exitCode_CONFIG 'default' 'build_fattenPath' "$build_fattenPath"
+	fi
+	
+	if core_variable_isSet build_swaddlePath; then
+		core_validate_filePathReadableAndExecutable $core_commandLine_exitCode_CONFIG 'configuration setting' 'build_swaddlePath' "$build_swaddlePath"
+	else
+		core_message INFO "Defaulting --swaddle-path to '$build_swaddlePath_default'"
+		build_swaddlePath="$build_swaddlePath_default"
+		core_validate_filePathReadableAndExecutable $core_commandLine_exitCode_CONFIG 'default' 'build_swaddlePath' "$build_swaddlePath"
+	fi
+}
+
+. "$_program_libPath"/shellfire/core/init.functions "$@"
