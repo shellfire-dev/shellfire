@@ -12,7 +12,7 @@ _program()
 		local fattenedOutputPath="$build_outputPath"/fattened/"$groupName"
 		rm -rf "$fattenedOutputPath"
 		mkdir -m 0755 -p "$fattenedOutputPath"
-		"$build_fattenPath_default" --verbose $(core_init_verbosity) --repository-path tools/fatten --output-path "$fattenedOutputPath" --bin-path "$binPath" -- fatten
+		"$build_fattenPath_default" --verbose $(core_init_verbosity) --repository-path tools/fatten --output-path "$fattenedOutputPath" --bin-path "$build_binPath" -- fatten
 		
 		# Override to force use of our fattened fatten
 		build_fattenPath="${fattenedOutputPath}${binPath}"/fatten
@@ -23,12 +23,11 @@ _program()
 		travis_ci_updateGitSubmodulesRecursively
 		build_prepareOutput
 		
-		local binPath="/usr/bin"
 		_build_createInitialFatten 'initial-fatten'
 		
-		build_fattenAndSwaddle 'shellfire' "$(pwd)" "$binPath" paths.d-helper
-		build_fattenAndSwaddle 'fatten' "$(pwd)"/tools/fatten "$binPath" fatten
-		build_fattenAndSwaddle 'swaddle' "$(pwd)"/tools/swaddle "$binPath" swaddle
+		build_fattenAndSwaddle 'shellfire' "$(pwd)" paths.d-helper
+		build_fattenAndSwaddle 'fatten' "$(pwd)"/tools/fatten fatten
+		build_fattenAndSwaddle 'swaddle' "$(pwd)"/tools/swaddle swaddle
 	}
 }
 
@@ -46,6 +45,8 @@ _program_entrypoint='build'
 
 _program_commandLine_parseInitialise()
 {
+	build_binPath_default="/usr/bin"
+	
 	local relativeToPath="$(pwd)"
 	build_outputPath_default="$relativeToPath"/output
 	build_fattenPath_default="$relativeToPath"/tools/fatten/fatten
@@ -57,6 +58,9 @@ _program_commandLine_helpMessage()
 	_program_commandLine_helpMessage_usage="[OPTION]..."
 	_program_commandLine_helpMessage_description="Builds shellfire tools, typically under Travis CI"
 	_program_commandLine_helpMessage_options="
+  -b, --bin-path PATH         PATH to prefix executables with
+                              Defaults to:-
+                              $build_binPath_default
   -p, --output-path PATH      PATH to build output to.
                               Defaults to one based on current working directory:-
                               $build_outputPath_default
@@ -80,7 +84,11 @@ _program_commandLine_helpMessage()
 _program_commandLine_optionExists()
 {
 	case "$optionName" in
-	
+		
+		b|bin-path)
+			echo 'yes-argumented'
+		;;
+		
 		o|output-path)
 			echo 'yes-argumented'
 		;;
@@ -103,6 +111,10 @@ _program_commandLine_optionExists()
 _program_commandLine_processOptionWithArgument()
 {
 	case "$optionName" in
+		
+		b|bin-path)
+			build_binPath="$build_binPath_default"
+		;;
 	
 		o|output-path)
 			core_validate_folderPathIsReadableAndSearchableAndWritableOrCanBeCreated $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
@@ -124,6 +136,10 @@ _program_commandLine_processOptionWithArgument()
 
 _program_commandLine_validate()
 {
+	if core_variable_isUnset build_binPath; then
+		core_validate_folderPathIsReadableAndSearchableAndWritableOrCanBeCreated $core_commandLine_exitCode_CONFIG 'configuration setting' 'build_outputPath' "$build_outputPath"
+	fi
+	
 	if core_variable_isSet build_outputPath; then
 		core_validate_folderPathIsReadableAndSearchableAndWritableOrCanBeCreated $core_commandLine_exitCode_CONFIG 'configuration setting' 'build_outputPath' "$build_outputPath"
 	else

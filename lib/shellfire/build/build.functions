@@ -9,8 +9,7 @@ build_fattenAndSwaddle()
 {
 	local groupName="$1"
 	local repositoryPath="$2"
-	local binPath="$3"
-	shift 3
+	shift 2
 	
 	local swaddlingPath="$repositoryPath"/swaddling
 	local bodyPath="$swaddlingPath"/body
@@ -24,6 +23,6 @@ build_fattenAndSwaddle()
 		ln -s "$fattenedOutputPath" "$bodyPath"
 	fi
 
-	"$build_fattenPath" --verbose $(core_init_verbosity) --repository-path "$repositoryPath" --output-path "$fattenedOutputPath" --bin-path "$binPath" -- "$@"
+	"$build_fattenPath" --verbose $(core_init_verbosity) --repository-path "$repositoryPath" --output-path "$fattenedOutputPath" --bin-path "$build_binPath" -- "$@"
 	"$build_swaddlePath" --verbose $(core_init_verbosity) --swaddling-path "$swaddlingPath" --output-path "$swaddledOutputPath" -- "$groupName"
 }
