@@ -23,7 +23,7 @@ build_fattenAndSwaddle()
 	fi
 
 	local swaddledOutputPath="$build_outputPath"/swaddled/"$groupName"
-	mkdir -m "$swaddledOutputPath"
+	mkdir -m 0755 -p "$swaddledOutputPath"
 
 	"$build_fattenPath" --verbose $(core_init_verbosity) --repository-path "$repositoryPath" --output-path "$fattenedOutputPath" --bin-path "$build_binPath" -- "$@"
 	"$build_swaddlePath" --verbose $(core_init_verbosity) --swaddling-path "$swaddlingPath" --output-path "$swaddledOutputPath" -- "$groupName"
