@@ -25,6 +25,10 @@ _program()
 		
 		_build_createInitialFatten 'initial-fatten'
 		
+		# TODO: Include LICENSE file in Debian (?copyright file)
+		# TODO: Include AUTHORS file
+		# TODO: Use pandoc to turn README.md into a man page
+		
 		build_fattenAndSwaddle 'shellfire' "$(pwd)" paths.d-helper
 		build_fattenAndSwaddle 'fatten' "$(pwd)"/tools/fatten fatten
 		build_fattenAndSwaddle 'swaddle' "$(pwd)"/tools/swaddle swaddle
@@ -137,7 +141,7 @@ _program_commandLine_processOptionWithArgument()
 _program_commandLine_validate()
 {
 	if core_variable_isUnset build_binPath; then
-		core_validate_folderPathIsReadableAndSearchableAndWritableOrCanBeCreated $core_commandLine_exitCode_CONFIG 'configuration setting' 'build_outputPath' "$build_outputPath"
+		build_binPath="$build_binPath_default"
 	fi
 	
 	if core_variable_isSet build_outputPath; then
