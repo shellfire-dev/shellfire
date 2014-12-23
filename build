@@ -21,6 +21,7 @@ _program()
 	build()
 	{
 		build_travis_ci_updateGitSubmodulesRecursively
+		build_travis_ci_ensureGnupgKeyringExists
 		build_prepareOutput
 		
 		_build_createInitialFatten 'initial-fatten'
