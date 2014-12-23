@@ -4,18 +4,43 @@ _program()
 {
 	core_usesIn build
 	core_usesIn travis ci
-	
-	build_fatten()
+
+	core_dependency_requires '*' rm mkdir
+	_build_createInitialFatten()
 	{
-		local repositoryPath="$1"
-		local relativeOutputPath="$2"
+		local groupName="$1"
+		local fattenedOutputPath="$build_outputPath"/fattened/"$groupName"
+		rm -rf "$fattenedOutputPath"
+		mkdir -m 0755 -p "$fattenedOutputPath"
+		"$build_fattenPath_default" --verbose $(core_init_verbosity) --repository-path tools/fatten --output-path "$fattenedOutputPath" --bin-path "$binPath" -- fatten
+		
+		# Override to force use of our fattened fatten
+		build_fattenPath="${fattenedOutputPath}${binPath}"/fatten
+	}
+	
+	# We could turn this into a sort of config file that sits in the root of the repository (or in tools)
+	core_dependency_requires '*' rm mkdir ln
+	build_fattenAndSwaddle()
+	{
+		local groupName="$1"
+		local repositoryPath="$2"
 		local binPath="$3"
 		shift 3
 		
-		local absoluteOutputPath="$build_outputPath"/"$relativeOutputPath"
-		mkdir -m 0755 -p "$absoluteOutputPath"
-		core_message INFO "Fattening all of $@ to "
-		"$build_fattenPath" --verbose $(core_init_verbosity) --repository-path "$repositoryPath" --output-path "$absoluteOutputPath" --bin-path "$binPath" -- "$@"
+		local swaddlingPath="$repositoryPath"/swaddling
+		local bodyPath="$swaddlingPath"/body
+		local fattenedOutputPath="$build_outputPath"/fattened/"$groupName"
+		local swaddledOutputPath="$build_outputPath"/swaddled/"$groupName"
+		
+		# fatten to the body path, but keep it outside of the git repository just in case a '.gitignore' file isn't set at body/.gitignore
+		rm -rf "$fattenedOutputPath"
+		mkdir -m 0755 -p "${fattenedOutputPath}${binPath}"
+		if [ -e "$bodyPath" ]; then
+			ln -s "$fattenedOutputPath" "$bodyPath"
+		fi
+
+		"$build_fattenPath" --verbose $(core_init_verbosity) --repository-path "$repositoryPath" --output-path "$fattenedOutputPath" --bin-path "$binPath" -- "$@"
+		"$build_swaddlePath" --verbose $(core_init_verbosity) --swaddling-path "$swaddlingPath" --output-path "$swaddledOutputPath"
 	}
 	
 	build()
@@ -24,13 +49,11 @@ _program()
 		build_prepareOutput
 		
 		local binPath="/usr/bin"
+		_build_createInitialFatten 'initial-fatten'
 		
-		build_fatten "$(pwd)"/tools/fatten fatten "$binPath" fatten
-		
-		# Deliberate override to use our newly made fatten to prove it works
-		build_fattenPath="${build_outputPath}/fatten${binPath}"/fatten
-		build_fatten "$(pwd)" shellfire "$binPath" paths.d-helper
-		build_fatten "$(pwd)"/tools/swaddle swaddle "$binPath" swaddle
+		build_fattenAndSwaddle 'shellfire' "$(pwd)" "$binPath" paths.d-helper
+		build_fattenAndSwaddle 'fatten' "$(pwd)"/tools/fatten "$binPath" fatten
+		build_fattenAndSwaddle 'swaddle' "$(pwd)"/tools/swaddle "$binPath" swaddle
 	}
 }
 
@@ -48,9 +71,10 @@ _program_entrypoint='build'
 
 _program_commandLine_parseInitialise()
 {
-	build_outputPath_default="$(pwd)/output"
-	build_fattenPath_default="$(pwd)/tools/fatten/fatten"
-	build_swaddlePath_default="$(pwd)/tools/swaddle/swaddle"
+	local relativeToPath="$(pwd)"
+	build_outputPath_default="$relativeToPath"/output
+	build_fattenPath_default="$relativeToPath"/tools/fatten/fatten
+	build_swaddlePath_default="$relativeToPath"/tools/swaddle/swaddle
 }
 
 _program_commandLine_helpMessage()
@@ -82,7 +106,7 @@ _program_commandLine_optionExists()
 {
 	case "$optionName" in
 	
-		p|pathsd-path)
+		o|output-path)
 			echo 'yes-argumented'
 		;;
 	
@@ -105,7 +129,7 @@ _program_commandLine_processOptionWithArgument()
 {
 	case "$optionName" in
 	
-		p|pathsd-path)
+		o|output-path)
 			core_validate_folderPathIsReadableAndSearchableAndWritableOrCanBeCreated $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
 			build_outputPath="$optionValue"
 		;;
