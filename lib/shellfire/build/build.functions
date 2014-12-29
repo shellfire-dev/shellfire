@@ -1,7 +1,7 @@
 core_dependency_requires '*' rm
 build_prepareOutput()
 {
-	rm -rf "$build_outputPath"
+	rm -rf "$build_outputPath" 2>/dev/null || sudo -p "Please enter the password for user %p to let root rm -rf '$build_outputPath': " rm -rf "$build_outputPath"
 }
 
 core_dependency_requires '*' rm mkdir ln
@@ -17,8 +17,7 @@ build_fattenAndSwaddle()
 	
 	core_message NOTICE "Fattening and swaddling '$groupName' from repository '$repositoryPath'"
 	
-	# fatten to the body path, but keep it outside of the git repository just in case a '.gitignore' file isn't set at body/.gitignore
-	rm -rf "$fattenedOutputPath" 2>/dev/null || sudo -p "Please enter the password for user %p to let root rm -rf '$$fattenedOutputPath': " rm -rf "$fattenedOutputPath"
+	rm -rf "$fattenedOutputPath" 2>/dev/null || sudo -p "Please enter the password for user %p to let root rm -rf '$fattenedOutputPath': " rm -rf "$fattenedOutputPath"
 	mkdir -m 0755 -p "${fattenedOutputPath}${build_binPath}"
 
 	core_message INFO "Symlinking body path to fattened output (make sure 'body' is in .gitignore)!"
