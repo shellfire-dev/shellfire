@@ -13,7 +13,7 @@ build_fattenAndSwaddle()
 	
 	local swaddlingPath="$repositoryPath"/swaddling
 	local bodyPath="$swaddlingPath"/body
-	local fattenedOutputPath="$build_outputPath"/fattened/"$groupName"
+	local fattenedOutputPath="$build_outputPath"/fattened/"$groupName"/all
 	
 	core_message NOTICE "Fattening and swaddling '$groupName' from repository '$repositoryPath'"
 	

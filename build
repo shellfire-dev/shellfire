@@ -12,7 +12,7 @@ _program()
 		
 		core_message NOTICE "Initial fattening of '$groupName' as a self-hosting bootstrap"
 		
-		local fattenedOutputPath="$build_outputPath"/fattened/"$groupName"
+		local fattenedOutputPath="$build_outputPath"/fattened/"$groupName"/all
 		rm -rf "$fattenedOutputPath"
 		mkdir -m 0755 -p "$fattenedOutputPath"
 		"$build_fattenPath_default" --verbose $(core_init_verbosity) --force --repository-path tools/fatten --output-path "$fattenedOutputPath" --bin-path "$build_binPath" -- fatten
