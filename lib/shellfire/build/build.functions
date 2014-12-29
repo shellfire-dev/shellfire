@@ -15,6 +15,8 @@ build_fattenAndSwaddle()
 	local bodyPath="$swaddlingPath"/body
 	local fattenedOutputPath="$build_outputPath"/fattened/"$groupName"
 	
+	core_message NOTICE "Fattening and swaddling '$groupName' from repository '$repositoryPath'"
+	
 	# fatten to the body path, but keep it outside of the git repository just in case a '.gitignore' file isn't set at body/.gitignore
 	rm -rf "$fattenedOutputPath"
 	mkdir -m 0755 -p "${fattenedOutputPath}${build_binPath}"
