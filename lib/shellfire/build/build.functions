@@ -20,10 +20,10 @@ build_fattenAndSwaddle()
 	# fatten to the body path, but keep it outside of the git repository just in case a '.gitignore' file isn't set at body/.gitignore
 	rm -rf "$fattenedOutputPath"
 	mkdir -m 0755 -p "${fattenedOutputPath}${build_binPath}"
-	if [ ! -e "$bodyPath" ]; then
-		core_message INFO "Symlinking body path to fattened output (make sure 'body' is in .gitignore)!"
-		ln -s "$fattenedOutputPath" "$bodyPath"
-	fi
+
+	core_message INFO "Symlinking body path to fattened output (make sure 'body' is in .gitignore)!"
+	rm -rf "$bodyPath"
+	ln -s "$fattenedOutputPath"/.. "$bodyPath"
 
 	local swaddledOutputPath="$build_outputPath"/swaddled/"$groupName"
 	mkdir -m 0755 -p "$swaddledOutputPath"
