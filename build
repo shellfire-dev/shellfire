@@ -65,8 +65,8 @@ _program_commandLine_parseInitialise()
 	build_fattenPath_default="$relativeToPath"/tools/fatten/fatten
 	build_swaddlePath_default="$relativeToPath"/tools/swaddle/swaddle
 	
-	# Force verbosity to 2
-	build_verbose=2
+	# Force verbosity to 1
+	build_verbose=1
 }
 
 _program_commandLine_helpMessage()
@@ -159,7 +159,6 @@ _program_commandLine_validate()
 	if core_variable_isSet build_outputPath; then
 		core_validate_folderPathIsReadableAndSearchableAndWritableOrCanBeCreated $core_commandLine_exitCode_CONFIG 'configuration setting' 'build_outputPath' "$build_outputPath"
 	else
-		core_message INFO "Defaulting --output-path to '$build_outputPath_default'"
 		build_outputPath="$build_outputPath_default"
 		core_validate_folderPathIsReadableAndSearchableAndWritableOrCanBeCreated $core_commandLine_exitCode_CONFIG 'default' 'build_outputPath' "$build_outputPath"
 	fi
@@ -167,7 +166,6 @@ _program_commandLine_validate()
 	if core_variable_isSet build_fattenPath; then
 		core_validate_filePathReadableAndExecutable $core_commandLine_exitCode_CONFIG 'configuration setting' 'build_fattenPath' "$build_fattenPath"
 	else
-		core_message INFO "Defaulting --fatten-path to '$build_fattenPath_default'"
 		build_fattenPath="$build_fattenPath_default"
 		core_validate_filePathReadableAndExecutable $core_commandLine_exitCode_CONFIG 'default' 'build_fattenPath' "$build_fattenPath"
 	fi
@@ -175,7 +173,6 @@ _program_commandLine_validate()
 	if core_variable_isSet build_swaddlePath; then
 		core_validate_filePathReadableAndExecutable $core_commandLine_exitCode_CONFIG 'configuration setting' 'build_swaddlePath' "$build_swaddlePath"
 	else
-		core_message INFO "Defaulting --swaddle-path to '$build_swaddlePath_default'"
 		build_swaddlePath="$build_swaddlePath_default"
 		core_validate_filePathReadableAndExecutable $core_commandLine_exitCode_CONFIG 'default' 'build_swaddlePath' "$build_swaddlePath"
 	fi
