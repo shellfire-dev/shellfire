@@ -72,7 +72,7 @@ _program_commandLine_parseInitialise()
 _program_commandLine_helpMessage()
 {
 	_program_commandLine_helpMessage_usage="[OPTION]..."
-	_program_commandLine_helpMessage_description="Builds shellfire tools"
+	_program_commandLine_helpMessage_description="Builds shellfire tools (uses verbosity of 1 by default)"
 	_program_commandLine_helpMessage_options="
   -b, --bin-path PATH         PATH to prefix executables with
                               Defaults to:-
