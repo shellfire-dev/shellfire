@@ -10,3 +10,6 @@
 [submodule "tools/swaddle"]
 	path = tools/swaddle
 	url = https://github.com/raphaelcohn/swaddle.git
+[submodule "lib/shellfire/build"]
+	path = lib/shellfire/build
+	url = https://github.com/shellfire-dev/build.git

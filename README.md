@@ -35,6 +35,7 @@ In homage to Python, batteries are included. Here's the list of modules and name
   * Trivial to use, but always secure, random and cleaned up temporary files and folders
   * Signal management
   * Arrays even for shells without them, and more!
+* [build], functions for creating build scripts as well as a ready-to-use binary, `build` to drop in and make builds easy-peasy.
 * [byte], functions for setting and testing bits.
 * [compress], a simple consistent interface to compression, file extensions and associated MIME types.
 * [configure], an additional framework for more advanced configuration. Used by [swaddle] to let users define simple configuration files for package and repository definitions.
@@ -116,6 +117,7 @@ Follow the [tutorial] and you'll be up and running your first [shellfire] applic
 [swaddle]: https://github.com/raphaelcohn/swaddle "Swaddle homepage"
 [bish-bosh]: https://github.com/raphaelcohn/bish-bosh "bish-bosh homepage"
 [core]: https://github.com/shellfire-dev/core "shellfire core module homepage"
+[build]: https://github.com/shellfire-dev/core "shellfire build module homepage"
 [byte]: https://github.com/shellfire-dev/byte "shellfire byte module homepage"
 [compress]: https://github.com/shellfire-dev/compress "shellfire compress module homepage"
 [configure]: https://github.com/shellfire-dev/configure "shellfire configure module homepage"
