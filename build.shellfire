@@ -24,7 +24,7 @@ build()
 	
 	_build_createInitialFatten 'initial-fatten'
 			
-	build_fattenAndSwaddle 'shellfire' "$build_relativePath" paths.d-helper
+	#build_fattenAndSwaddle 'shellfire' "$build_relativePath" paths.d-helper
 	build_fattenAndSwaddle 'fatten' "$build_relativePath"/tools/fatten fatten
-	build_fattenAndSwaddle 'swaddle' "$build_relativePath"/tools/swaddle swaddle
+	#build_fattenAndSwaddle 'swaddle' "$build_relativePath"/tools/swaddle swaddle
 }
