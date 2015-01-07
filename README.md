@@ -43,6 +43,7 @@ In homage to Python, batteries are included. Here's the list of modules and name
 * [github api], a REST interface that uses [curl], [urlencode], [jsonreader] and [jsonwriter]. Currently, only supports enough to support [swaddle], but, if you're looking for an open source project, this is one to do. A complete command line, shell based GitHub client would be a real win. And one for Linode. And Digital Ocean. And ...
 * [jsonreader], a pure shell JSON reader. Raises events rather than creating an anaemic DOM of objects and lists - which has always been the _right_ way to deal with structured data... Think SAX for JSON.
 * [jsonwriter], writes JSON.
+* [random], a small framework to obtain random numbers and characters in shell script, using fallbacks to progressively less random sources.
 * [unicode], to correctly encode code points in UTF-8 and UTF-16 (uggh).
 * [urlencode], for all the myriad URL encodings possible. Includes a URI template Level 4 encoder.
 * [version], a simple module to compare version numbers. Yes, I know that's normally bad, but some things (like [curl]) need it as we can't do feature detection.
@@ -120,6 +121,7 @@ Follow the [tutorial](https://github.com/shellfire-dev/shellfire/tree/master/tut
 [github api]: https://github.com/shellfire-dev/github "shellfire github api module homepage"
 [jsonreader]: https://github.com/shellfire-dev/jsonreader "shellfire jsonreader module homepage"
 [jsonwriter]: https://github.com/shellfire-dev/jsonwriter "shellfire jsonwriter module homepage"
+[random]: https://github.com/shellfire-dev/random "shellfire random module homepage"
 [unicode]: https://github.com/shellfire-dev/unicode "shellfire unicode module homepage"
 [urlencode]: https://github.com/shellfire-dev/urlencode "shellfire urlencode module homepage"
 [version]: https://github.com/shellfire-dev/version "shellfire version module homepage"
