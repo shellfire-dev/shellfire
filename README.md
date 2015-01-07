@@ -35,6 +35,7 @@ In homage to Python, batteries are included. Here's the list of modules and name
   * Trivial to use, but always secure, random and cleaned up temporary files and folders
   * Signal management
   * Arrays even for shells without them, and more!
+* [byte], functions for setting and testing bits.
 * [compress], a simple consistent interface to compression, file extensions and associated MIME types.
 * [configure], an additional framework for more advanced configuration. Used by [swaddle] to let users define simple configuration files for package and repository definitions.
 * [cpucount], functions to help with enumerating CPU numbers and deciding on load averages.
@@ -49,7 +50,7 @@ In homage to Python, batteries are included. Here's the list of modules and name
 * [version], a simple module to compare version numbers. Yes, I know that's normally bad, but some things (like [curl]) need it as we can't do feature detection.
 * [xmlwriter], writes XML.
 
-Of course, this is just a start. If there's something you'd like to see, code it and submit a pull request. And let us know what you're doing with it.
+Of course, this is just a start. If there's something you'd like to see, code it and submit a pull request.
 
 Additionally, there's also
 
@@ -58,7 +59,7 @@ Additionally, there's also
 * [swaddle], to package everything up, create repositories and push to GitHub, whether as a Deb, RPM, tarball or 7z. Or more.
 
 ## Why?
-Because the shell matters, as shellshock showed us. Because the shell is powerful, but is a poorly understood programming language. And it needs proper constructs. And lastly, because we're fed up with having to install half-an-universe's worth of Ruby, Python and Perl to bootstrap our servers or run CI jobs\*. We like [Rob Landley's Aboriginal Linux](http://landley.net/aboriginal/). And if we want to build our own bespoke, single purpose servers, managed switches and embedded routers post-Snowden, less is more.
+Because the shell matters, as shellshock showed us. Because the shell is powerful, but is a poorly understood programming language with too many variants and gotchas. And it needs proper constructs. And lastly, because we're fed up with having to install half-an-universe's worth of Ruby, Python and Perl to bootstrap our servers or run CI jobs\*. We like [Rob Landley's Aboriginal Linux](http://landley.net/aboriginal/). And if we want to build our own bespoke, single purpose servers, managed switches and embedded routers post-Snowden, less is more.
 
 \* And if you've had to work with some of the backwards-is-forwards sysadmins I have had to in some strange organisations, doing it all in the shell is the only way of getting it done at all.
 
@@ -114,6 +115,7 @@ Follow the [tutorial](https://github.com/shellfire-dev/shellfire/tree/master/tut
 [swaddle]: https://github.com/raphaelcohn/swaddle "Swaddle homepage"
 [bish-bosh]: https://github.com/raphaelcohn/bish-bosh "bish-bosh homepage"
 [core]: https://github.com/shellfire-dev/core "shellfire core module homepage"
+[byte]: https://github.com/shellfire-dev/byte "shellfire byte module homepage"
 [compress]: https://github.com/shellfire-dev/compress "shellfire compress module homepage"
 [configure]: https://github.com/shellfire-dev/configure "shellfire configure module homepage"
 [cpucount]: https://github.com/shellfire-dev/cpucount "shellfire cpucount module homepage"
