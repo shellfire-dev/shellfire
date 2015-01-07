@@ -14,7 +14,7 @@ _program()
 	}
 
 	# relative symlink
-	core_usesIn build shellfire
+	core_usesIn build build.shellfire
 }
 
 _program_name='build'
