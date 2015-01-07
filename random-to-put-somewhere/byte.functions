@@ -4,10 +4,10 @@
 
 byte_bit()
 {
-   local -i value=${1:-0}
-   local -i bit=${2-0}
-   local -i bitMask=$(( 1 << bit ))
-   echo -n $(( value & bitMask ? 1 : 0 ))
+   local value=${1:-0}
+   local bit=${2-0}
+   local bitMask=$(( 1 << bit ))
+   printf '%s' $(( value & bitMask ? 1 : 0 ))
 }
 
 byte_isBitSet()
@@ -15,22 +15,22 @@ byte_isBitSet()
    return $(( 1 - $(byte_bit "$@") ))
 }
 
-# could also assign to a variable using printf syntax (printf -v VAR '%s' $binaryValue)
 byte_printBinary()
 {
 	local binaryValue
-	local -i bit
-	for ((bit=7; bit!=-1; bit--))
+	local bit=7
+	while [ $bit -ge 0 ]
 	do
 		binaryValue=${binaryValue}$(byte_bit $1 $bit)
+		bit=$((bit-1))
 	done
 	printf '%s' $binaryValue
 }
 
 byte_setBit()
 {
-	local -i binaryValue=$1
-	local -i bit=$2
+	local binaryValue=$1
+	local bit=$2
 	
-	echo -n $(( 1 << bit | binaryValue ))
+	printf '%s' $(( 1 << bit | binaryValue ))
 }
