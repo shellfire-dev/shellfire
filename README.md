@@ -12,8 +12,8 @@
 
 [shellfire] consists of a number of github repositories, called modules. Each module contains functions or resources in a specific namespace. You create a [shellfire] application by making a new repository (typically on GitHub) with a skeleton structure, and then adding the modules you need. You populate a template shell script, and then just code away. It couldn't be easier. [shellfire] scripts work straightaway from source control. When you're ready to do a release, you can use [fatten] to make a standalone script, and [swaddle] to then deploy it to GitHub releases, pages, etc as tarballs, debs, etc.
 
-## Impatient to Get Started? There's a [tutorial](https://github.com/shellfire-dev/shellfire/tree/master/tutorial)
-Try the [overdrive tutorial](https://github.com/shellfire-dev/shellfire/tree/master/tutorial). You'll be up and running your first [shellfire] application in 10 mins.
+## Impatient to Get Started? There's a [tutorial]
+Try the overdrive [tutorial]. You'll be up and running with your first [shellfire] application in 10 mins.
 
 ## So what's included?
 In homage to Python, batteries are included. Here's the list of modules and namespaces:-
@@ -57,6 +57,7 @@ Additionally, there's also
 * [fatten], to make standalone shell scripts
 * [paths.d], which contains common locations and package names for different package managers. Used by [core]'s dependency framework as a source of information on where to find programs.
 * [swaddle], to package everything up, create repositories and push to GitHub, whether as a Deb, RPM, tarball or 7z. Or more.
+* [tutorial], the tutorial
 
 ## Why?
 Because the shell matters, as shellshock showed us. Because the shell is powerful, but is a poorly understood programming language with too many variants and gotchas. And it needs proper constructs. And lastly, because we're fed up with having to install half-an-universe's worth of Ruby, Python and Perl to bootstrap our servers or run CI jobs\*. We like [Rob Landley's Aboriginal Linux](http://landley.net/aboriginal/). And if we want to build our own bespoke, single purpose servers, managed switches and embedded routers post-Snowden, less is more.
@@ -108,7 +109,7 @@ yash is not there yet but could be if there's interest. We're not going to suppo
 [shellfire] has been open sourced and enhanced from code previously used in-house by [stormmq](http://stormmq.com/) and [KisanHub](http://www.kisanhub.com/). The lead developer is [Raphael Cohn](https://github.com/raphaelcohn).
 
 ## Ready to get stated?
-Follow the [tutorial](https://github.com/shellfire-dev/shellfire/tree/master/tutorial) and you'll be up and running your first [shellfire] application in 10 mins.
+Follow the [tutorial] and you'll be up and running your first [shellfire] application in 10 mins.
 
 [shellfire]: https://github.com/shellfire-dev "shellfire homepage"
 [fatten]: https://github.com/shellfire-dev/fatten "fatten homepage"
@@ -129,3 +130,4 @@ Follow the [tutorial](https://github.com/shellfire-dev/shellfire/tree/master/tut
 [version]: https://github.com/shellfire-dev/version "shellfire version module homepage"
 [xmlwriter]: https://github.com/shellfire-dev/xmlwriter "shellfire xmlwriter module homepage"
 [paths.d]: https://github.com/shellfire-dev/paths.d "shellfire paths.d path data homepage"
+[tutorial]: https://github.com/shellfire-dev/tutorial "shellfire tutorial homepage"

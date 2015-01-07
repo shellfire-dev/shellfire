@@ -1,1 +1,0 @@
-../../../../etc/shellfire/paths.d
