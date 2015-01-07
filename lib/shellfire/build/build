@@ -5,7 +5,16 @@
 
 _program()
 {
-	core_usesIn build script
+	core_usesIn build
+	core_usesIn build/travis ci
+
+	build()
+	{
+		core_exitError $core_commandLine_exitCode_CONFIG "Make sure to define build() in build.shellfire"
+	}
+
+	# relative symlink
+	core_usesIn build shellfire
 }
 
 _program_name='build'
@@ -21,9 +30,9 @@ _program_commandLine_parseInitialise()
 {
 	build_relativePath_default="$(pwd)"
 	build_binPath_default="/usr/bin"
-	build_outputPath_default="$relativeToPath"/output
-	build_fattenPath_default="$relativeToPath"/tools/fatten/fatten
-	build_swaddlePath_default="$relativeToPath"/tools/swaddle/swaddle
+	build_outputPath_default="$build_relativePath_default"/output
+	build_fattenPath_default="$build_relativePath_default"/tools/fatten/fatten
+	build_swaddlePath_default="$build_relativePath_default"/tools/swaddle/swaddle
 	
 	# Force verbosity to 1
 	build_verbose=1
@@ -98,7 +107,7 @@ _program_commandLine_processOptionWithArgument()
 	case "$optionName" in
 		
 		r|relative-path)
-			core_validate_filePathReadableAndExecutable $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
 			build_relativePath="$optionValue"
 		;;
 		
@@ -127,10 +136,10 @@ _program_commandLine_processOptionWithArgument()
 _program_commandLine_validate()
 {
 	if core_variable_isSet build_relativePath; then
-		core_validate_filePathReadableAndExecutable $core_commandLine_exitCode_CONFIG 'configuration setting' 'build_relativePath' "$build_relativePath"
+		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'configuration setting' 'build_relativePath' "$build_relativePath"
 	else
 		build_relativePath="$build_relativePath_default"
-		core_validate_filePathReadableAndExecutable $core_commandLine_exitCode_CONFIG 'default' 'build_relativePath' "$build_relativePath"
+		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'default' 'build_relativePath' "$build_relativePath"
 	fi
 	
 	if core_variable_isUnset build_binPath; then

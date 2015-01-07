@@ -18,10 +18,6 @@ _build_createInitialFatten()
 
 build()
 {
-	echo $_program_libPath
-	echo WORKS
-	return 0
-	
 	build_travis_ci_updateGitSubmodulesRecursively
 	build_travis_ci_ensureGnupgKeyringExists
 	build_prepareOutput
