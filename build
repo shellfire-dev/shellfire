@@ -39,8 +39,8 @@ _program()
 		# TODO: Use pandoc to turn README.md into a man page
 		
 		build_fattenAndSwaddle 'shellfire' "$(pwd)" paths.d-helper
-		build_fattenAndSwaddle 'fatten' "$(pwd)"/tools/fatten fatten
-		build_fattenAndSwaddle 'swaddle' "$(pwd)"/tools/swaddle swaddle
+		#build_fattenAndSwaddle 'fatten' "$(pwd)"/tools/fatten fatten
+		#build_fattenAndSwaddle 'swaddle' "$(pwd)"/tools/swaddle swaddle
 	}
 }
 
