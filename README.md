@@ -120,6 +120,7 @@ Follow the [tutorial] and you'll be up and running your first [shellfire] applic
 [compress]: https://github.com/shellfire-dev/compress "shellfire compress module homepage"
 [configure]: https://github.com/shellfire-dev/configure "shellfire configure module homepage"
 [cpucount]: https://github.com/shellfire-dev/cpucount "shellfire cpucount module homepage"
+[curl]: https://github.com/shellfire-dev/curl "shellfire curl module homepage"
 [debian]: https://github.com/shellfire-dev/debian "shellfire debian module homepage"
 [github api]: https://github.com/shellfire-dev/github "shellfire github api module homepage"
 [jsonreader]: https://github.com/shellfire-dev/jsonreader "shellfire jsonreader module homepage"
