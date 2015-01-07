@@ -64,6 +64,9 @@ _program_commandLine_parseInitialise()
 	build_outputPath_default="$relativeToPath"/output
 	build_fattenPath_default="$relativeToPath"/tools/fatten/fatten
 	build_swaddlePath_default="$relativeToPath"/tools/swaddle/swaddle
+	
+	# Force verbosity to 2
+	build_verbose=2
 }
 
 _program_commandLine_helpMessage()
