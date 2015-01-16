@@ -1,5 +1,18 @@
 core_dependency_requires '*' rm mkdir
-_build_createInitialFatten()
+
+build()
+{
+	build_travis_ci_updateGitSubmodulesRecursively
+	build_travis_ci_ensureGnupgKeyringExists
+	build_prepareOutput
+	
+	build_createInitialFatten 'initial-fatten'
+	
+	build_assignDefaultComponents
+	core_variable_array_iterate build_nonOptions build_component
+}
+
+build_createInitialFatten()
 {
 	local groupName="$1"
 	
@@ -16,15 +29,37 @@ _build_createInitialFatten()
 	build_fattenPath="${fattenedOutputPath}${build_binPath}"/fatten
 }
 
-build()
+build_assignDefaultComponents()
 {
-	build_travis_ci_updateGitSubmodulesRecursively
-	build_travis_ci_ensureGnupgKeyringExists
-	build_prepareOutput
-	
-	_build_createInitialFatten 'initial-fatten'
-			
-	#build_fattenAndSwaddle 'shellfire' "$build_relativePath" paths.d-helper
+	if core_variable_array_isEmpty build_nonOptions; then
+		core_variable_array_append build_nonOptions \
+			'fatten' \
+			'swaddle' \
+			'shellfire'
+	fi
+}
+
+build_component()
+{
+	local component="$core_variable_array_element"
+	local buildComponentFunction="build_component_${component}"
+	if ! core_functions_exists "$buildComponentFunction"; then
+		core_exitError $core_commandLine_exitCode_USAGE "There is no build component '$component'"
+	fi
+	"$buildComponentFunction" "$@"	
+}
+
+build_component_fatten()
+{
 	build_fattenAndSwaddle 'fatten' "$build_relativePath"/tools/fatten fatten
-	#build_fattenAndSwaddle 'swaddle' "$build_relativePath"/tools/swaddle swaddle
+}
+
+build_component_fatten()
+{
+	build_fattenAndSwaddle 'swaddle' "$build_relativePath"/tools/swaddle swaddle
+}
+
+build_component_shellfire()
+{
+	build_fattenAndSwaddle 'shellfire' "$build_relativePath" paths.d-helper
 }
