@@ -54,7 +54,7 @@ build_component_fatten()
 	build_fattenAndSwaddle 'fatten' "$build_relativePath"/tools/fatten fatten
 }
 
-build_component_fatten()
+build_component_swaddle()
 {
 	build_fattenAndSwaddle 'swaddle' "$build_relativePath"/tools/swaddle swaddle
 }
