@@ -8,10 +8,10 @@ Architecture: all
 Source: shellfire
 Version: 2015.0117.1750-1
 Filename: pool/multiverse/s/shellfire/shellfire_2015.0117.1750-1_all.deb
-Size: 30356
-MD5sum: 2ae904bf35f69f80bd83dad025c1a340
-SHA1: 315bb12698f23427317628bf81b4bd13e94bf2b7
-SHA256: c9755cae0b231ff8c6ef60b81126f8cf1f8a52fd5d231fb8ec9a0bfd41c0d45b
+Size: 30366
+MD5sum: 62565446caae7d511c1af569ae319663
+SHA1: 56f77f754e7528adb49be5f43a0754ba7f6ea4c7
+SHA256: 36da49a05dc6379a481e0e9185d82d7cf8667fe0afeb1d513da5f377532fc69e
 Description: shellfire is a simple framework for creatings
  shell script based applications.
 Homepage: https://github.com/shellfire-dev/shellfire
