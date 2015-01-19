@@ -117,7 +117,7 @@ Follow the [tutorial] and you'll be up and running your first [shellfire] applic
 [swaddle]: https://github.com/raphaelcohn/swaddle "Swaddle homepage"
 [bish-bosh]: https://github.com/raphaelcohn/bish-bosh "bish-bosh homepage"
 [core]: https://github.com/shellfire-dev/core "shellfire core module homepage"
-[build]: https://github.com/shellfire-dev/core "shellfire build module homepage"
+[build]: https://github.com/shellfire-dev/build "shellfire build module homepage"
 [byte]: https://github.com/shellfire-dev/byte "shellfire byte module homepage"
 [compress]: https://github.com/shellfire-dev/compress "shellfire compress module homepage"
 [configure]: https://github.com/shellfire-dev/configure "shellfire configure module homepage"
