@@ -74,6 +74,8 @@ Well, not much yet, but, who knows? There's currently:-
 * [swaddle], a tool for packaging, building package repositories, signing them, deploying their keys and publishing them on GitHub pages or wherever.
 * [bish-bosh], a complete [MQTT](http://mqtt.org/) 3.1.1 client. Totally portable, totally scriptable, minimally dependent.
 * [fatten], shellfire's own fattening tool
+* [developjs], [KisanHub]'s foundational javascript framework
+* [luvi-builder], a simple wrapper around [luvi]
 
 ## You're mad. You should grow up and use Ruby, Python or Go.
 We're proficient in all of them. And we've delivered some seriously hard core stuff in our time: message queue brokers that handle 1,000,000 simultaneous users in C. Postgresql network protocols in Java. Static webframeworks in Ruby. Devops automation in Python, oh, and a portfolio trading system in C#. A professional uses the language most appropriate to the problem domain. We do have beards and sandles, though.
@@ -134,3 +136,7 @@ Follow the [tutorial] and you'll be up and running your first [shellfire] applic
 [xmlwriter]: https://github.com/shellfire-dev/xmlwriter "shellfire xmlwriter module homepage"
 [paths.d]: https://github.com/shellfire-dev/paths.d "shellfire paths.d path data homepage"
 [tutorial]: https://github.com/shellfire-dev/tutorial "shellfire tutorial homepage"
+[developjs]: https://github.com/KisanHub/developjs "developjs homepage"
+[KisanHub]: http://kisanhub.com/ "KisanHub homepage"
+[luvi-builder]: https://github.com/raphaelcohn/luvi-builder "luvi-builder homepage"
+[luvi]: https://github.com/luvit/luvi: "luvi homepage"
