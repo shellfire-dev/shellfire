@@ -42,6 +42,7 @@ In homage to Python, batteries are included. Here's the list of modules and name
 * [cpucount], functions to help with enumerating CPU numbers and deciding on load averages.
 * [curl], superb interface to curl that works with the shell. Securely wraps curl so URLs, headers and credentials don't leak in process lists or environment variables, and parses headers, etc afterwards.
 * [debian], a small framework that includes a complete Debian control file parser.
+* [git], a small framework of wrapper functions to make it easier to use `git` from [shellfire] applications.
 * [github api], a REST interface that uses [curl], [urlencode], [jsonreader] and [jsonwriter]. Currently, only supports enough to support [swaddle], but, if you're looking for an open source project, this is one to do. A complete command line, shell based GitHub client would be a real win. And one for Linode. And Digital Ocean. And ...
 * [jsonreader], a pure shell JSON reader. Raises events rather than creating an anaemic DOM of objects and lists - which has always been the _right_ way to deal with structured data... Think SAX for JSON.
 * [jsonwriter], writes JSON.
@@ -126,6 +127,7 @@ Follow the [tutorial] and you'll be up and running your first [shellfire] applic
 [cpucount]: https://github.com/shellfire-dev/cpucount "shellfire cpucount module homepage"
 [curl]: https://github.com/shellfire-dev/curl "shellfire curl module homepage"
 [debian]: https://github.com/shellfire-dev/debian "shellfire debian module homepage"
+[git]: https://github.com/shellfire-dev/git "shellfire git module homepage"
 [github api]: https://github.com/shellfire-dev/github "shellfire github api module homepage"
 [jsonreader]: https://github.com/shellfire-dev/jsonreader "shellfire jsonreader module homepage"
 [jsonwriter]: https://github.com/shellfire-dev/jsonwriter "shellfire jsonwriter module homepage"
