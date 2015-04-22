@@ -14,7 +14,7 @@ temporaryKeyFile="$(mktemp --tmpdir shellfire.key.XXXXXXXXX)"
 trap 'rm -rf "$temporaryKeyFile"' EXIT HUP INT QUIT TERM
 cat >"$temporaryKeyFile" <<EOF
 -----BEGIN PGP PUBLIC KEY BLOCK-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+Version: GnuPG v1
 
 mQINBFShemYBEADcrVIR6UqeG5HYbD9DSbKdNhG+yVi5hndZsercMDDRpQoqMWzi
 alRzL5UD4NjGgVxoi+9kFkQ1IlTY57PzAre85KCN87vJ2fs0+9n78Lap916sfP2O
