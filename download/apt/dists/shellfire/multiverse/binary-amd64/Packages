@@ -111,3 +111,26 @@ Build-Essential: no
 Origin: stormmq
 Supported: 9m
 
+Package: shellfire
+Essential: no
+Priority: extra
+Section: misc
+Installed-Size: 150
+Maintainer: Raphael Cohn <raphael.cohn@stormmq.com>
+Architecture: all
+Source: shellfire
+Version: 2015.0428.0848-2
+Depends: dash
+Filename: pool/multiverse/s/shellfire/shellfire_2015.0428.0848-2_all.deb
+Size: 30758
+MD5sum: 126d09e044ff0d74fee9bfe35461617e
+SHA1: 1a8002ffaca1a4ae059e31794ab7e88b32955256
+SHA256: cd70a9469588d50d6e4be3920a82775f91f9d83a13cf174f626c5100e6caf9e4
+Description: shellfire is a simple framework for creatings
+ shell script based applications.
+Homepage: https://github.com/shellfire-dev/shellfire
+Bugs: https://github.com/shellfire-dev/shellfire/issues
+Build-Essential: no
+Origin: stormmq
+Supported: 9m
+
