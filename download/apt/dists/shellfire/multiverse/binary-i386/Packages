@@ -122,10 +122,10 @@ Source: shellfire
 Version: 2015.0428.0848-2
 Depends: dash
 Filename: pool/multiverse/s/shellfire/shellfire_2015.0428.0848-2_all.deb
-Size: 30770
-MD5sum: 6a40869f41ef8a3e94d37e2a7526fa09
-SHA1: e38f17cb3e0b47df9156c2e71565083220820e2a
-SHA256: 12a281869771586b6b4516c4a0d667d4bd4ce5174d795850d4f3f0fb6396f62b
+Size: 30776
+MD5sum: 87c42bb1b41d9fd74fedd13ec4bbdc0f
+SHA1: d388d312f098745a7a8298112549d3b6eb84dde2
+SHA256: acb976d3a4421a455a1fa81e69b9252dc4d9e93a01dc951eb1db290fc0f981d9
 Description: shellfire is a simple framework for creatings
  shell script based applications.
 Homepage: https://github.com/shellfire-dev/shellfire
