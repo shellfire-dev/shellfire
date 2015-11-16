@@ -42,6 +42,7 @@ In homage to Python, batteries are included. Here's the list of modules and name
 * [cpucount], functions to help with enumerating CPU numbers and deciding on load averages.
 * [curl], superb interface to curl that works with the shell. Securely wraps curl so URLs, headers and credentials don't leak in process lists or environment variables, and parses headers, etc afterwards.
 * [debian], a small framework that includes a complete Debian control file parser.
+* [git], a small framework of wrapper functions to make it easier to use `git` from [shellfire] applications.
 * [github api], a REST interface that uses [curl], [urlencode], [jsonreader] and [jsonwriter]. Currently, only supports enough to support [swaddle], but, if you're looking for an open source project, this is one to do. A complete command line, shell based GitHub client would be a real win. And one for Linode. And Digital Ocean. And ...
 * [jsonreader], a pure shell JSON reader. Raises events rather than creating an anaemic DOM of objects and lists - which has always been the _right_ way to deal with structured data... Think SAX for JSON.
 * [jsonwriter], writes JSON.
@@ -74,6 +75,8 @@ Well, not much yet, but, who knows? There's currently:-
 * [swaddle], a tool for packaging, building package repositories, signing them, deploying their keys and publishing them on GitHub pages or wherever.
 * [bish-bosh], a complete [MQTT](http://mqtt.org/) 3.1.1 client. Totally portable, totally scriptable, minimally dependent.
 * [fatten], shellfire's own fattening tool
+* [developjs], [KisanHub]'s foundational javascript framework
+* [luvi-builder], a simple wrapper around [luvi]
 
 ## You're mad. You should grow up and use Ruby, Python or Go.
 We're proficient in all of them. And we've delivered some seriously hard core stuff in our time: message queue brokers that handle 1,000,000 simultaneous users in C. Postgresql network protocols in Java. Static webframeworks in Ruby. Devops automation in Python, oh, and a portfolio trading system in C#. A professional uses the language most appropriate to the problem domain. We do have beards and sandles, though.
@@ -124,6 +127,7 @@ Follow the [tutorial] and you'll be up and running your first [shellfire] applic
 [cpucount]: https://github.com/shellfire-dev/cpucount "shellfire cpucount module homepage"
 [curl]: https://github.com/shellfire-dev/curl "shellfire curl module homepage"
 [debian]: https://github.com/shellfire-dev/debian "shellfire debian module homepage"
+[git]: https://github.com/shellfire-dev/git "shellfire git module homepage"
 [github api]: https://github.com/shellfire-dev/github "shellfire github api module homepage"
 [jsonreader]: https://github.com/shellfire-dev/jsonreader "shellfire jsonreader module homepage"
 [jsonwriter]: https://github.com/shellfire-dev/jsonwriter "shellfire jsonwriter module homepage"
@@ -134,3 +138,7 @@ Follow the [tutorial] and you'll be up and running your first [shellfire] applic
 [xmlwriter]: https://github.com/shellfire-dev/xmlwriter "shellfire xmlwriter module homepage"
 [paths.d]: https://github.com/shellfire-dev/paths.d "shellfire paths.d path data homepage"
 [tutorial]: https://github.com/shellfire-dev/tutorial "shellfire tutorial homepage"
+[developjs]: https://github.com/KisanHub/developjs "developjs homepage"
+[KisanHub]: http://kisanhub.com/ "KisanHub homepage"
+[luvi-builder]: https://github.com/raphaelcohn/luvi-builder "luvi-builder homepage"
+[luvi]: https://github.com/luvit/luvi: "luvi homepage"
