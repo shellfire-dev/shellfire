@@ -12,7 +12,7 @@ pathsd_helper_actions_Debian_start()
 	pathsd_helper_actions_createDependencyFolder
 	
 	set +f
-	set -- ~/.cache/apt-file/*
+	set -- "$HOME"/.cache/apt-file/*
 	set -f
 	
 	local updateAptFileCache
